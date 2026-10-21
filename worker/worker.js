@@ -191,7 +191,6 @@ async function chat(req, env, ctx) {
   const rk = new Request('https://rl.finscope.local/' + encodeURIComponent(ip) + '/' + hour);
   const hitc = await caches.default.match(rk); const n = hitc ? (parseInt(await hitc.text(), 10) || 0) : 0;
   if (n >= 20) return new Response(JSON.stringify({ error: 'limit' }), { status: 429, headers: H });
-  ctx.waitUntil(caches.default.put(rk, new Response(String(n + 1), { headers: { 'cache-control': 'max-age=3600' } })));
   const T = String((b && b.t) || '').toUpperCase().slice(0, 10);
   const hist = Array.isArray(b.h) ? b.h.slice(-6).filter(m => m && (m.r === 'u' || m.r === 'a') && typeof m.c === 'string').map(m => ({ role: m.r === 'u' ? 'user' : 'assistant', content: m.c.slice(0, 600) })) : [];
   try {
@@ -205,6 +204,7 @@ async function chat(req, env, ctx) {
     if (!out) throw lastErr || new Error('empty');
     const a = String((out && (out.response || (out.result && out.result.response))) || '').trim();
     if (!a) throw new Error('empty');
+    ctx.waitUntil(caches.default.put(rk, new Response(String(n + 1), { headers: { 'cache-control': 'max-age=3600' } })));
     return new Response(JSON.stringify({ a: a.slice(0, 2000) }), { headers: H });
   } catch (e) {
     const m = String(e && e.message || e);
