@@ -36,7 +36,7 @@ main{max-width:820px;margin:0 auto;padding:16px 16px 60px}
 @keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .hero{display:flex;gap:14px;align-items:center}
 .av{width:54px;height:54px;border-radius:18px;background:linear-gradient(135deg,var(--ac),var(--ac2));display:grid;place-items:center;color:#fff;font-weight:800;font-size:23px;flex:none;box-shadow:0 8px 24px var(--glow1)}
-.tm{border-bottom:1.5px dotted var(--ac);cursor:help;border-radius:2px}.tm:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.tm.lb{display:inline}.tm{border-bottom:1.5px dotted var(--ac);cursor:help;border-radius:2px}.tm:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 .tip{position:fixed;z-index:300;max-width:min(300px,calc(100vw - 24px));background:var(--bg);color:var(--tx);border:1px solid var(--bd);box-shadow:0 12px 40px rgba(0,0,0,.35);border-radius:14px;padding:10px 13px;font-size:13px;line-height:1.45;pointer-events:none}
 .tip[hidden]{display:none}.tip b{display:block;margin-bottom:2px}
 .shr{margin-left:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--bd);background:var(--chip);color:var(--tx);font:inherit;font-weight:700;font-size:13px;border-radius:99px;padding:8px 13px;cursor:pointer}.shr svg{width:16px;height:16px}.shr:hover{border-color:var(--ac)}.shr:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
@@ -658,7 +658,7 @@ function lblTips(root){
   if(td.querySelector('.tm')||td.dataset.lt)return;
   const raw=td.textContent,l=raw.replace(/\s*\(.*?\)/g,'').trim().toLowerCase();
   const i=LT.findIndex(x=>x[0].test(l));if(i<0)return;
-  td.dataset.lt='1';const sp=document.createElement('span');sp.className='tm tl';sp.tabIndex=0;sp.dataset.l=i;
+  td.dataset.lt='1';const sp=document.createElement('span');sp.className='tm lb';sp.tabIndex=0;sp.dataset.l=i;
   while(td.firstChild)sp.append(td.firstChild);td.append(sp);
  });
 }
