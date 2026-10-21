@@ -33,6 +33,7 @@ function checkStock(t) {
   if (!S) return;
   for (const k of ['t', 'name', 'asof', 'daily', 'verdict', 'tape', 'tabs']) if (S[k] == null) err(f, 'нет поля ' + k);
   if (S.en && Object.values(S.en).some(v => typeof v !== 'string' || /[А-Яа-яЁё]/.test(v) || /\d,\d/.test(v))) err(f, 'en: только английские строки, без запятой между цифрами (используйте пробел или точку)');
+  if (JSON.stringify(S).includes('TODO')) err(f, 'остались метки TODO, акцию нельзя публиковать');
   if (S.t !== t) err(f, 'поле t (' + S.t + ') не совпадает с именем файла');
   if (!ISO.test(S.asof || '')) err(f, 'asof должен быть датой ГГГГ-ММ-ДД');
   // цены

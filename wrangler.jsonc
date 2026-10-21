@@ -1,0 +1,13 @@
+{
+  // Автодеплой воркера из GitHub (Cloudflare Workers Builds). Подключение: Workers & Pages -> finscope -> Settings -> Builds -> Connect.
+  "name": "finscope",
+  "main": "worker/worker.js",
+  "compatibility_date": "2026-10-01",
+  "keep_vars": true,
+  "observability": { "enabled": true },
+  // Привязка Workers AI для FinScopeBot (переменная AI)
+  "ai": { "binding": "AI" }
+  // Счётчик просмотров: после создания KV-хранилища STATS добавьте сюда и закоммитьте:
+  // "kv_namespaces": [{ "binding": "STATS", "id": "<ID хранилища из Cloudflare>" }]
+  // Секреты TD_KEY и STATS_KEY остаются в настройках Cloudflare, в репозиторий их не кладут.
+}
