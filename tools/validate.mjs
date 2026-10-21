@@ -55,6 +55,7 @@ function checkStock(t) {
     if (!ISO.test(S.ext.date || '')) err(f, 'ext.date должен быть датой');
     for (const k of ['close', 'pre', 'post']) if (S.ext[k] != null && !isNum(S.ext[k])) err(f, 'ext.' + k + ' должно быть числом или null');
   }
+  if (S.events) S.events.forEach((e, i) => { if (!ISO.test(e.d || '') || !e.t) err(f, 'events[' + i + '] плохой формат'); });
   if (S.sparse) S.sparse.forEach((r, i) => { if (!ISO.test(r[0]) || !isNum(r[1])) err(f, 'sparse[' + i + '] плохой формат'); });
   // вердикт
   const v = S.verdict || {};

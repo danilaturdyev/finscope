@@ -31,6 +31,11 @@ main{max-width:820px;margin:0 auto;padding:16px 16px 60px}
 .tape div{display:inline-block;padding:11px 0;animation:tp 45s linear infinite}.tape span{margin:0 18px;color:var(--mu)}.tape b{color:var(--tx)}
 @keyframes tp{to{transform:translateX(-50%)}}
 .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+.evt{background:var(--card);border:1px solid var(--bd);border-radius:22px;padding:16px 18px;margin-bottom:12px}.evt h3{font-size:15px;margin:0 0 10px;color:var(--mu);font-weight:700;letter-spacing:0}
+.ev{display:flex;align-items:center;gap:14px;padding:6px 0}.ev+.ev{border-top:1px solid var(--bd);margin-top:6px;padding-top:12px}
+.ed{flex:none;width:58px;height:58px;border-radius:16px;background:var(--chip);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05}.ed b{font-size:22px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}.ed span{font-size:12px;font-weight:700;color:var(--mu);text-transform:uppercase}
+.et{min-width:0;flex:1}.et b{display:block;font-size:16px}.et span{display:block;font-size:13.5px;color:var(--mu);margin-top:2px}
+.ec{flex:none;font-size:13px;font-weight:800;padding:6px 12px;border-radius:99px;background:var(--chip);white-space:nowrap}.eb{display:inline-block;margin-left:8px;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;background:var(--chip);color:var(--mu);vertical-align:2px;text-transform:uppercase;letter-spacing:.03em}
 .ssr{margin-bottom:12px}.ssr .search{padding:4px 4px 4px 14px}.ssr .search input{font-size:16px;padding:8px 4px}.ssr .search button{padding:10px 18px}.ssr .sg{position:relative;z-index:30}
 @media (min-width:900px){.ssr{max-width:560px}}
 .chip{flex:none;padding:7px 14px;border-radius:99px;background:var(--chip);font-size:14px;font-weight:600;color:var(--mu)}a.chip{text-decoration:none;cursor:pointer}.chip.on{background:var(--tx);color:var(--bg)}
@@ -221,7 +226,7 @@ main{max-width:1240px;padding:22px 40px 80px}
 .steps{grid-template-columns:repeat(3,1fr);gap:18px}.step{padding:24px}
 /* страница акции: слева график, справа вердикт */
 #stock{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(420px,1fr);column-gap:24px;align-items:start}
-#stock>.live,#stock>.ssr,#stock>.tape,#stock>.tabs,#stock>#panel,#stock>.note{grid-column:1/-1}
+#stock>.live,#stock>.ssr,#stock>.evt,#stock>.tape,#stock>.tabs,#stock>#panel,#stock>.note{grid-column:1/-1}
 #stock>.card{margin-bottom:0}
 #stock>.card:not(.vd){grid-column:1;grid-row:4;padding:28px}
 #stock>.vd{grid-column:2;grid-row:4;position:static;align-self:stretch;padding:36px 32px;display:flex;flex-direction:column;justify-content:flex-start}
@@ -230,6 +235,7 @@ main{max-width:1240px;padding:22px 40px 80px}
 #stock>.vd .pl .seg{grid-column:1/-1;grid-row:2}#stock>.vd .pl em{grid-column:2;grid-row:1}#stock>.vd h2+p{margin-bottom:32px}
 #stock>.vd .seg{gap:6px}#stock>.vd .seg i{height:12px;border-radius:10px}
 #stock>.vd .pl em{font-size:16px;font-weight:700}
+#stock>.evt{margin-top:20px}
 #stock>.tabs{margin:28px 0 16px;flex-wrap:wrap;overflow:visible}
 .tab{padding:10px 20px;font-size:15px}
 #stock .hero h1{font-size:26px}
@@ -339,6 +345,7 @@ h3{font-size:20px}
   <p style="font-size:12px;opacity:.7;margin:10px 0 0">Оценки по пятибалльной шкале выставлены по фактам из вкладок ниже. Это не прогноз и не инвестиционная рекомендация.</p>
 </div>
 
+<section class="evt" id="evt" hidden aria-labelledby="evtH"></section>
 <div class="tabs" role="tablist" id="tabs"></div>
 <div id="panel"></div>
 <p class="note">Данные: отчёты компании в SEC (8-K, 10-Q), биржевые и опционные сайты, новости за июль – октябрь 2026. Дневные цены 3 авг – 20 окт 2026 взяты из таблиц котировок, более ранние точки отрывочные, минутной ленты нет. Источники иногда расходятся, поэтому проверяй ключевые цифры сам. FinScope не является инвестиционным советником.</p>
@@ -645,7 +652,7 @@ function setLang(l){
   if(LIVE.ser[0])setSess(LIVE.ser[0],LIVE.prev);
   liveBadge();
  }
- mkRender();
+ mkRender();if(typeof evtRender==='function'&&!$('stock').hidden)evtRender();
 }
 document.getElementById('lang').addEventListener('click',()=>setLang(LANG==='en'?'ru':'en'));
 applyLang();
@@ -937,6 +944,19 @@ function revText(){
  const t=new Date(d+'T12:00:00').toLocaleDateString(LANG==='en'?'en-GB':'ru-RU',{day:'numeric',month:'short'});
  el.textContent=(LANG==='en'?'Analysis updated ':'Разбор обновлён ')+t;
 }
+function dayWord(n){const a=n%10,b=n%100;return b>10&&b<15?'дней':a===1?'день':a>1&&a<5?'дня':'дней'}
+function evtRender(){
+ const box=$('evt');if(!box||!CUR)return;const S=CUR,en=LANG==='en',tx=s=>en&&S.en&&S.en[s]||s;
+ const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York'}).format(new Date());
+ const L=(S.events||[]).filter(e=>e.d>=today).sort((a,b)=>a.d<b.d?-1:1).slice(0,3);
+ if(!L.length){box.hidden=true;box.innerHTML='';return}
+ box.innerHTML=`<h3 id="evtH">${en?'Upcoming events':'Ближайшие события'}</h3>`+L.map(e=>{
+  const dt=new Date(e.d+'T12:00:00Z'),n=Math.round((Date.parse(e.d+'T00:00:00Z')-Date.parse(today+'T00:00:00Z'))/864e5);
+  const mon=dt.toLocaleDateString(LOC,{month:'short',timeZone:'UTC'}).replace('.','');
+  const cd=n===0?(en?'today':'сегодня'):n===1?(en?'tomorrow':'завтра'):en?`in ${n} days`:`через ${n} ${dayWord(n)}`;
+  return `<div class="ev"><div class="ed"><b>${dt.getUTCDate()}</b><span>${mon}</span></div><div class="et"><b>${tx(e.t)}${e.est?`<i class="eb">${en?'estimate':'оценка'}</i>`:''}</b>${e.s?`<span>${tx(e.s)}</span>`:''}</div><div class="ec">${cd}</div></div>`}).join('');
+ box.hidden=false;
+}
 function renderStatic(){
  const S=CUR;
  $('heroLogo').outerHTML=S.logo?`<img class="avl${S.logoShape==='round'?' round':''}" id="heroLogo" alt="Логотип ${S.t}" src="${logoUrl(S)}">`:`<div class="av" id="heroLogo">${S.t[0]}</div>`;
@@ -950,7 +970,7 @@ function renderStatic(){
  mkRender();
  $('tabs').innerHTML=TABS.map(([k,n])=>`<button class="tab" role="tab" data-k="${k}">${n}</button>`).join('');
  document.title=S.t+' · FinScope';
- chips();
+ chips();evtRender();
 }
 function chips(){
  
