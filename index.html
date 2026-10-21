@@ -42,6 +42,20 @@ main{max-width:820px;margin:0 auto;padding:16px 16px 60px}
 .shr{margin-left:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--bd);background:var(--chip);color:var(--tx);font:inherit;font-weight:700;font-size:13px;border-radius:99px;padding:8px 13px;cursor:pointer}.shr svg{width:16px;height:16px}.shr:hover{border-color:var(--ac)}.shr:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 @media (max-width:420px){.shr span{display:none}.shr{padding:9px}}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tx);color:var(--bg);font-weight:700;font-size:14px;padding:10px 16px;border-radius:99px;z-index:400;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.bot-fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:150;display:inline-flex;align-items:center;gap:8px;border:0;border-radius:99px;padding:13px 18px;font:inherit;font-weight:800;font-size:14px;color:#fff;background:linear-gradient(135deg,var(--ac),var(--ac2));box-shadow:0 10px 30px var(--glow1);cursor:pointer}
+.bot-fab svg{width:20px;height:20px}.bot-fab:hover{filter:brightness(1.08)}.bot-fab:focus-visible,.bot button:focus-visible,.bot input:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+@media (max-width:480px){.bot-fab span{display:none}.bot-fab{padding:14px}}
+.bot{position:fixed;z-index:160;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));width:min(390px,calc(100vw - 32px));height:min(560px,calc(100vh - 110px));display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--bd);border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,.4);overflow:hidden}
+.bot[hidden]{display:none}
+.bot header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--bd)}.bot header b{display:block;font-size:16px}.bot header small{color:var(--mu);font-size:12px}
+.bot header button{width:34px;height:34px;border-radius:50%;border:1px solid var(--bd);background:var(--chip);color:var(--tx);cursor:pointer}
+.bot-m{flex:1;overflow:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.bm{max-width:88%;padding:10px 13px;border-radius:16px;font-size:14px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}.bm.a{align-self:flex-start;background:var(--chip)}.bm.u{align-self:flex-end;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff}
+.bm.t{color:var(--mu)}
+.bot-c{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 8px}.bot-c button{border:1px solid var(--bd);background:var(--chip);color:var(--tx);font:inherit;font-size:12.5px;font-weight:600;border-radius:99px;padding:7px 11px;cursor:pointer}.bot-c button:hover{border-color:var(--ac)}
+.bot-f{display:flex;gap:8px;padding:8px 12px 6px}.bot-f input{flex:1;min-width:0;border:1px solid var(--bd);background:var(--chip);color:var(--tx);font:inherit;font-size:15px;border-radius:99px;padding:11px 15px}.bot-f button{flex:none;width:44px;border:0;border-radius:50%;background:var(--ac);color:#fff;font-size:16px;cursor:pointer}.bot-f button:disabled{opacity:.5;cursor:default}
+.bot-d{margin:0;padding:4px 16px 12px;color:var(--mu);font-size:11.5px}
+@media (max-width:480px){.bot{right:8px;left:8px;width:auto;bottom:calc(72px + env(safe-area-inset-bottom,0px));height:min(70vh,calc(100vh - 100px))}}
 .prw{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .mk{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--bd);background:var(--chip);display:grid;place-items:center;cursor:pointer;padding:0;margin-top:4px}
 .mk svg{width:22px;height:22px}.mk:hover{border-color:var(--ac)}.mk:focus-visible,.mdl-x:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
@@ -282,6 +296,14 @@ h3{font-size:20px}
 <div class="tabs" role="tablist" id="tabs"></div>
 <div id="panel"></div>
 <p class="note">Данные: отчёты компании в SEC (8-K, 10-Q), биржевые и опционные сайты, новости за июль – октябрь 2026. Дневные цены 3 авг – 20 окт 2026 взяты из таблиц котировок, более ранние точки отрывочные, минутной ленты нет. Источники иногда расходятся, поэтому проверяй ключевые цифры сам. FinScope не является инвестиционным советником.</p>
+</section>
+<button type="button" class="bot-fab" id="botb" aria-haspopup="dialog" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/><path d="M9 11h.01M12 11h.01M15 11h.01"/></svg><span id="botbt">FinScopeBot</span></button>
+<section class="bot" id="botp" role="dialog" aria-modal="false" aria-labelledby="botT" hidden>
+ <header><div><b id="botT">FinScopeBot</b><small id="botS">Объясняет термины и разборы сайта</small></div><button type="button" id="botx" aria-label="Закрыть">✕</button></header>
+ <div class="bot-m" id="botm" aria-live="polite"></div>
+ <div class="bot-c" id="botc"></div>
+ <form class="bot-f" id="botf" autocomplete="off"><input id="boti" maxlength="400" placeholder="Задайте вопрос"><button type="submit" id="bots" aria-label="Отправить">➤</button></form>
+ <p class="bot-d" id="botd">Ответы пишет ИИ и он может ошибаться. Это не инвестиционный совет.</p>
 </section>
 <div class="tip" id="tip" role="tooltip" hidden></div>
 <div class="mdl" id="mdl" hidden><div class="mdl-bg" id="mdlBg"></div><div class="mdl-sh" role="dialog" aria-modal="true" aria-labelledby="mdlT"><button type="button" class="mdl-x" id="mdlX" aria-label="Закрыть">✕</button><h2 id="mdlT">Рабочее время рынка</h2><p class="mdl-s">Время указано в местном часовом поясе</p><div class="mdl-l" id="mdlL"></div><p class="mdl-n">Учтены праздники и сокращённые дни биржи NYSE на 2026–2027 годы. Часы относятся к рынку акций США (Нью-Йорк).</p><a class="mdl-a" href="https://www.nyse.com/markets/hours-calendars" target="_blank" rel="noopener noreferrer">Подробнее о времени работы рынка</a></div></div>
@@ -558,7 +580,7 @@ function applyLang(){
   ATT.forEach(([el,a,v])=>{if(el.isConnected)el.setAttribute(a,v)});ATT.length=0;
  }
 
- langBtn();if(typeof TH_IC!=='undefined'&&TH_IC)themeBtn();
+ langBtn();if(typeof TH_IC!=='undefined'&&TH_IC)themeBtn();if(typeof BOT_T!=='undefined'&&BOT_T)botLabels();
 }
 function setLang(l){
  LANG=l;LOC=l==='en'?'en-GB':'ru-RU';
@@ -590,6 +612,43 @@ $('shr').addEventListener('click',async()=>{
 });
 function hit(p){try{const k='fs_hit_'+p;if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}catch(e){}
  try{if(location.protocol.startsWith('http')){const u='/api/hit?p='+encodeURIComponent(p);if(!(navigator.sendBeacon&&navigator.sendBeacon(u)))fetch(u,{method:'POST',keepalive:true}).catch(()=>{})}}catch(e){}}
+
+
+/* ===== FinScopeBot: помощник (бесплатный ИИ через воркер, /api/chat) ===== */
+var BOT_T={
+ ru:{sub:'Объясняет термины и разборы сайта',ph:'Задайте вопрос',dis:'Ответы пишет ИИ и он может ошибаться. Это не инвестиционный совет.',hi:'Привет! Я FinScopeBot. Объясню термины и разборы на сайте. О чём спросить?',typ:'Печатаю…',x:'Закрыть',send:'Отправить',
+  err:{'bot-off':'Бот пока не подключён. Попробуйте позже.',limit:'Вы задали много вопросов. Попробуйте через час.',quota:'На сегодня бесплатный лимит бота исчерпан. Попробуйте завтра.',fail:'Не получилось ответить. Попробуйте ещё раз.'},
+  chipsS:['Чем занимается компания?','Какие главные риски?','Как читать вердикт?','Что такое P/E?'],chipsH:['Какие акции есть на сайте?','Как читать вердикт?','Что такое P/E?','Это инвестиционный совет?']},
+ en:{sub:'Explains terms and the analyses on this site',ph:'Ask a question',dis:'Answers are written by AI and it can be wrong. This is not investment advice.',hi:'Hi! I am FinScopeBot. I can explain terms and the analyses on this site. What would you like to ask?',typ:'Typing…',x:'Close',send:'Send',
+  err:{'bot-off':'The bot is not connected yet. Please try later.',limit:'You have asked many questions. Please try again in an hour.',quota:'The free daily limit of the bot is used up. Please try tomorrow.',fail:'Could not answer. Please try again.'},
+  chipsS:['What does the company do?','What are the main risks?','How do I read the verdict?','What is P/E?'],chipsH:['Which stocks are on the site?','How do I read the verdict?','What is P/E?','Is this investment advice?']}};
+var BOTH=[],BOTBUSY=false;
+function botT(){return BOT_T[LANG==='en'?'en':'ru']}
+function botLabels(){
+ const t=botT();$('botS').textContent=t.sub;$('boti').placeholder=t.ph;$('botd').textContent=t.dis;$('botx').setAttribute('aria-label',t.x);$('bots').setAttribute('aria-label',t.send);
+ const first=$('botm').firstElementChild;if(first&&first.dataset.hi)first.textContent=t.hi;
+ const onStock=!$('stock').hidden&&CUR;$('botc').innerHTML=(onStock?t.chipsS:t.chipsH).map(q=>`<button type="button">${q}</button>`).join('');
+}
+function botAdd(role,text,cls){const d=document.createElement('div');d.className='bm '+role+(cls?' '+cls:'');d.textContent=text;$('botm').append(d);$('botm').scrollTop=1e9;return d}
+function botOpen(){$('botp').hidden=false;$('botb').setAttribute('aria-expanded','true');if(!$('botm').children.length){const d=botAdd('a',botT().hi);d.dataset.hi='1'}botLabels();$('boti').focus()}
+function botClose(){$('botp').hidden=true;$('botb').setAttribute('aria-expanded','false');$('botb').focus()}
+async function botAsk(q){
+ q=q.trim().slice(0,400);if(!q||BOTBUSY)return;BOTBUSY=true;$('bots').disabled=true;
+ botAdd('u',q);$('botc').innerHTML='';const ty=botAdd('a',botT().typ,'t');
+ let out;
+ try{
+  const r=await fetch('/api/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q,t:(!$('stock').hidden&&CUR)?CUR.t:'',h:BOTH.slice(-6)})});
+  const j=await r.json().catch(()=>({}));
+  out=r.ok&&j.a?j.a:botT().err[j.error]||botT().err.fail;
+  if(r.ok&&j.a){BOTH.push({r:'u',c:q},{r:'a',c:j.a})}
+ }catch(e){out=botT().err.fail}
+ ty.remove();botAdd('a',out);BOTBUSY=false;$('bots').disabled=false;botLabels();$('boti').focus();
+}
+$('botb').addEventListener('click',()=>$('botp').hidden?botOpen():botClose());
+$('botx').addEventListener('click',botClose);
+$('botf').addEventListener('submit',e=>{e.preventDefault();const v=$('boti').value;$('boti').value='';botAsk(v)});
+$('botc').addEventListener('click',e=>{const b=e.target.closest('button');if(b)botAsk(b.textContent)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('botp').hidden&&$('mdl').hidden)botClose()});
 
 /* ===== Подсказки терминов: берутся из словаря акции (вкладка «Словарь»), только латинские термины ===== */
 let TIPS=[];
