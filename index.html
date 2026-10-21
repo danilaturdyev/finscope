@@ -321,6 +321,11 @@ function chart(){
   $('ro').innerHTML=`<div class="t">${whenLbl(x[0])}${NOTE[x[0]]?` <span class="d">· ${NOTE[x[0]]}</span>`:''}</div><div class="m mono"><div><small>Цена</small><b>${f(x[1])}</b></div><div><small>С начала периода</small><b class="${cl}">${pct(r)}</b></div>${d?`<div><small>Открытие</small>${f(d[0])}</div><div><small>Максимум</small>${f(d[1])}</div><div><small>Минимум</small>${f(d[2])}</div><div><small>Объём</small>${d[4]?d[4].toFixed(1)+' млн':'—'}</div>`:''}</div><div class="d" style="margin-top:8px">${intr?'Живые данные Twelve Data (с задержкой, если у источника так задано). Время — ваше местное.':(d?'Минутных данных нет, есть только сводка дня.':'По этому дню известна только цена закрытия.')}</div>`;
  };
  show(pts.length-1);
+ const el=$('chart');
+ const tix=e=>{const r=el.getBoundingClientRect();const i=Math.round(CH.timeScale().coordinateToLogical(e.clientX-r.left));return Math.max(0,Math.min(pts.length-1,isFinite(i)?i:pts.length-1))};
+ const tmove=e=>{if(e.pointerType!=='touch')return;const i=tix(e);LIVE.hover=true;show(i);try{CH.setCrosshairPosition(pts[i][1],pts[i][0],ser)}catch(x){}};
+ const tend=e=>{if(e.pointerType!=='touch')return;LIVE.hover=false;try{CH.clearCrosshairPosition()}catch(x){}show(pts.length-1)};
+ el.onpointerdown=tmove;el.onpointermove=e=>{if(e.pressure>0||e.buttons)tmove(e)};el.onpointerup=tend;el.onpointercancel=tend;
  CH.subscribeCrosshairMove(p=>{
   const v=p.seriesData&&p.seriesData.get(ser);
   if(!p.time||!v){LIVE.hover=false;show(pts.length-1);return}
