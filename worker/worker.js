@@ -51,7 +51,7 @@ async function td(path, env) {
   if (!r.ok || j.status === 'error') throw new Error((j && j.message) || ('HTTP ' + r.status));
   return j;
 }
-async function build(i, env, SYMBOL, MIC) {
+async function build(i, env, SYMBOL, MIC, pcNeeded) {
   const c = CFG[i];
   const base = 'time_series?symbol=' + encodeURIComponent(SYMBOL) + (MIC || '') + '&interval=' + c.iv + '&outputsize=' + c.n + '&timezone=UTC&order=ASC&format=JSON';
   let ts;
@@ -72,7 +72,7 @@ async function build(i, env, SYMBOL, MIC) {
   if (i === 0) {
     const d = etParts(last).date;
     pts = pts.filter(p => etParts(p[0]).date === d);
-    try { const q = await td('quote?symbol=' + encodeURIComponent(SYMBOL) + (MIC || '') + '&format=JSON', env); prevClose = parseFloat(q.previous_close) || null; } catch (e) {}
+    if (pcNeeded) try { const q = await td('quote?symbol=' + encodeURIComponent(SYMBOL) + (MIC || '') + '&format=JSON', env); prevClose = parseFloat(q.previous_close) || null; } catch (e) {}
   } else {
     pts = pts.filter(p => p[0] >= last - c.days * 86400);
   }
@@ -89,7 +89,7 @@ async function series(u, env, ctx) {
   if (hit) return hit;
   try {
     const ex = await tdExtra(T);
-    const data = await build(i, env, ex.sym, ex.mic);
+    const data = await build(i, env, ex.sym, ex.mic, u.searchParams.get('q') === '1');
     data.symbol = T;
     const body = JSON.stringify(data);
     const mk = age => new Response(body, { headers: Object.assign({ 'cache-control': 'public, max-age=' + age }, JSONH) });
