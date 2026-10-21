@@ -38,7 +38,7 @@ const JSONH = { 'content-type': 'application/json; charset=utf-8', 'access-contr
 function etParts(sec) {
   const p = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: 'numeric', hour12: false, weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(sec * 1000));
   const o = {}; p.forEach(x => o[x.type] = x.value);
-  return { h: (+o.hour) % 24, wd: o.weekday, date: o.year + '-' + o.month + '-' + o.day };
+  return { h: (+o.hour) % 24, m: +o.minute, wd: o.weekday, date: o.year + '-' + o.month + '-' + o.day };
 }
 // Вне торгового окна США (пн–пт 04:00–20:00 по Нью-Йорку) данные почти не меняются — реже ходим к источнику, экономим лимит.
 function ttlFor(base) {
@@ -216,6 +216,31 @@ async function chat(req, env, ctx) {
     return new Response(JSON.stringify({ error: /limit|quota|neuron|capacity|3036|4006/i.test(m) ? 'quota' : 'fail', d: m.slice(0, 300) }), { status: 502, headers: H });
   }
 }
+// Живые цены для карточек главной: один общий ответ на всех, кэш 5 минут, только пока открыто торговое окно США (экономим лимит Twelve Data: 1 запрос на акцию).
+async function quotes(u, env, ctx) {
+  const H = Object.assign({ 'cache-control': 'public, max-age=60' }, JSONH);
+  const e = etParts(Date.now() / 1000);
+  const mins = e.h * 60 + e.m, open = !['Sat', 'Sun'].includes(e.wd) && mins >= 570 && mins < 960; // основная сессия 9:30-16:00 по Нью-Йорку
+  if (!open || !env.TD_KEY) return new Response(JSON.stringify({ live: false }), { headers: H });
+  const cache = caches.default, key = new Request(u.origin + '/__fresh/quotes');
+  const hit = await cache.match(key); if (hit) return hit;
+  let reg = []; try { const r = await fetch(BASE + 'data/stocks.json', { cf: { cacheTtl: 300, cacheEverything: true } }); if (r.ok) reg = await r.json(); } catch (x) {}
+  const list = (Array.isArray(reg) ? reg : []).slice(0, 8);
+  const res = await Promise.all(list.map(async x => {
+    try {
+      const ex = await tdExtra(x.t);
+      const q = await td('quote?symbol=' + encodeURIComponent(ex.sym) + (ex.mic || '') + '&format=JSON', env);
+      const c = parseFloat(q.close), p = parseFloat(q.previous_close);
+      return isFinite(c) && isFinite(p) && p > 0 ? [x.t, { c, p }] : null;
+    } catch (x2) { return null; }
+  }));
+  const q = Object.fromEntries(res.filter(Boolean));
+  const ok = Object.keys(q).length > 0;
+  const body = JSON.stringify({ live: ok, q, at: Date.now() });
+  const r = new Response(body, { headers: Object.assign({ 'cache-control': 'public, max-age=' + (ok ? 300 : 60) }, JSONH) });
+  ctx.waitUntil(cache.put(key, r.clone()));
+  return r;
+}
 async function sitemap(u) {
   let l = []; try { const r = await fetch(BASE + 'data/stocks.json', { cf: { cacheTtl: 300, cacheEverything: true } }); if (r.ok) l = await r.json(); } catch (e) {}
   const urls = ['/'].concat((Array.isArray(l) ? l : []).map(x => '/' + x.t));
@@ -227,6 +252,7 @@ export default {
     const u = new URL(req.url);
     if (u.hostname === 'www.finscope.uk') return Response.redirect(SITE + u.pathname + u.search, 301);
     if (u.pathname === '/api/series') return series(u, env, ctx);
+    if (u.pathname === '/api/quotes') return quotes(u, env, ctx);
     if (u.pathname === '/api/chat') return chat(req, env, ctx);
     if (u.pathname === '/api/hit') return hit(u, env);
     if (u.pathname === '/stats') return stats(u, env);

@@ -259,7 +259,7 @@ h3{font-size:20px}
   <div class="mk-h"><h2 id="mkT">Акции на сайте</h2><div class="seg" id="mks" role="group" aria-label="Сортировка"><button type="button" data-s="n" class="on" aria-pressed="true">А–Я</button><button type="button" data-s="u" aria-pressed="false"><i aria-hidden="true">▲</i>Растут</button><button type="button" data-s="d" aria-pressed="false"><i aria-hidden="true">▼</i>Падают</button></div></div>
   <div class="mk-f" id="mkf" role="group" aria-label="Отрасль"></div>
   <div class="mk-g" id="mkg"></div>
-  <p class="d mk-n">Цены на закрытие последней торговой сессии.</p>
+  <p class="d mk-n" id="mkn">Цены на закрытие последней торговой сессии.</p>
  </section>
  <div class="feat">
   <div class="card"><div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><h3>Отчёты и цифры</h3><p>Данные из отчётов компании в SEC, дневные цены, итоги по годам, долг и денежные запасы.</p></div>
@@ -685,8 +685,16 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('botp').hidden&&
 
 
 /* ===== Главная: карточки акций, фильтр по отрасли, сортировка ===== */
-let QT={},MKF=-1,MKS='n';
+let QT={},QLIVE=0,MKF=-1,MKS='n';
 async function loadQuotes(){try{const q=await getJSON(DATA_BASE+'quotes.json?'+Math.floor(Date.now()/120000));QT=q&&typeof q==='object'?q:{}}catch(e){QT={}}}
+async function liveQuotes(){
+ try{
+  const r=await fetch('/api/quotes');if(!r.ok)return;const j=await r.json();
+  if(j&&j.live&&j.q){Object.keys(j.q).forEach(t=>{QT[t]=Object.assign({},QT[t],j.q[t])});QLIVE=j.at||Date.now();hmRender()}
+  else if(QLIVE){QLIVE=0;await loadQuotes();hmRender()}
+ }catch(e){}
+}
+setInterval(()=>{if(!document.hidden&&!$('home').hidden)liveQuotes()},300000);
 function hmRender(){
  const box=$('hmk');if(!box)return;if(!REG.length){box.hidden=true;return}box.hidden=false;
  const en=LANG==='en',secs=[...new Set(REG.map(x=>x.sector).filter(Boolean))];
@@ -694,6 +702,7 @@ function hmRender(){
  if(MKF>=secs.length)MKF=-1;
  $('mkf').hidden=secs.length<2;
  $('mkf').innerHTML=secs.length<2?'':[[-1,en?'All':'Все']].concat(secs.map((s,i)=>[i,sName(REG.find(x=>x.sector===s))])).map(([i,l])=>`<button type="button" data-i="${i}" class="${i===MKF?'on':''}" aria-pressed="${i===MKF}">${l}</button>`).join('');
+const nt=$('mkn');if(nt){const en0=LANG==='en';nt.textContent=QLIVE?(en0?'Prices updated at ':'Цены обновлены в ')+new Date(QLIVE).toLocaleTimeString(en0?'en-GB':'ru-RU',{hour:'2-digit',minute:'2-digit'})+(en0?', with a delay of a few minutes.':', с задержкой в несколько минут.'):(en0?'Prices at the close of the last trading session.':'Цены на закрытие последней торговой сессии.')}
  document.querySelectorAll('#mks button').forEach(b=>{const on=b.dataset.s===MKS;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
  const chg=x=>{const q=QT[x.t];return q&&q.p?(q.c-q.p)/q.p*100:null};
  let L=REG.filter(x=>MKF<0||x.sector===secs[MKF]);
@@ -959,7 +968,7 @@ $('cpb').addEventListener('click',async()=>{
 window.addEventListener('hashchange',route);
 (async()=>{
  try{await loadReg()}catch(e){REG=[]}
- homeTexts();loadQuotes().then(hmRender);hmRender();
+ homeTexts();loadQuotes().then(()=>{hmRender();liveQuotes()});hmRender();
  if(!REG.length){const m=$('sm');m.hidden=false;m.textContent='Не удалось загрузить список акций. Обнови страницу чуть позже.';return}
  if(location.hash.replace(/^#\/?/,'')){await route()}
  else{
