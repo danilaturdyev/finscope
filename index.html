@@ -639,7 +639,7 @@ async function botAsk(q){
  try{
   const r=await fetch('/api/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q,t:(!$('stock').hidden&&CUR)?CUR.t:'',h:BOTH.slice(-6)})});
   const j=await r.json().catch(()=>({}));
-  out=r.ok&&j.a?j.a:botT().err[j.error]||botT().err.fail;
+  out=r.ok&&j.a?j.a:botT().err[j.error]||botT().err.fail;if(!r.ok&&j.d)out+=' ['+j.d+']';
   if(r.ok&&j.a){BOTH.push({r:'u',c:q},{r:'a',c:j.a})}
  }catch(e){out=botT().err.fail}
  ty.remove();botAdd('a',out);BOTBUSY=false;$('bots').disabled=false;botLabels();$('boti').focus();

@@ -198,7 +198,8 @@ async function chat(req, env, ctx) {
     return new Response(JSON.stringify({ a: a.slice(0, 2000) }), { headers: H });
   } catch (e) {
     const m = String(e && e.message || e);
-    return new Response(JSON.stringify({ error: /limit|quota|neuron|capacity|3036|4006/i.test(m) ? 'quota' : 'fail' }), { status: 502, headers: H });
+    console.log('chat error', m);
+    return new Response(JSON.stringify({ error: /limit|quota|neuron|capacity|3036|4006/i.test(m) ? 'quota' : 'fail', d: m.slice(0, 300) }), { status: 502, headers: H });
   }
 }
 export default {
