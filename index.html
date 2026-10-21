@@ -21,6 +21,7 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 -apple-system,"Inter","Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
 body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(600px 400px at 85% -5%,var(--glow2),transparent 70%),radial-gradient(700px 500px at -10% 10%,var(--glow1),transparent 70%)}
 main{max-width:820px;margin:0 auto;padding:16px 16px 60px}
+@media (min-width:481px){main{max-width:440px}#chart{height:280px}.cover h1{font-size:34px!important}.about h2{font-size:28px!important}.price{font-size:42px!important}.pl{grid-template-columns:100px 1fr 54px}.price{font-size:42px}}
 .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .logo{font-weight:800;font-size:21px;letter-spacing:-.03em}.logo b{background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
 .live{font-size:12px;color:var(--mu);display:flex;align-items:center;gap:6px}.live i{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pu 2s infinite}
