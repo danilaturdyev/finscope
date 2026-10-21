@@ -40,7 +40,7 @@ main{max-width:820px;margin:0 auto;padding:16px 16px 60px}
 .tip{position:fixed;z-index:300;max-width:min(300px,calc(100vw - 24px));background:var(--bg);color:var(--tx);border:1px solid var(--bd);box-shadow:0 12px 40px rgba(0,0,0,.35);border-radius:14px;padding:10px 13px;font-size:13px;line-height:1.45;pointer-events:none}
 .tip[hidden]{display:none}.tip b{display:block;margin-bottom:2px}
 .shr{margin-left:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--bd);background:var(--chip);color:var(--tx);font:inherit;font-weight:700;font-size:13px;border-radius:99px;padding:8px 13px;cursor:pointer}.shr svg{width:16px;height:16px}.shr:hover{border-color:var(--ac)}.shr:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
-@media (max-width:420px){.shr span{display:none}.shr{padding:9px}}
+.shr{padding:10px;width:40px;height:40px;justify-content:center}.shr svg{width:18px;height:18px}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tx);color:var(--bg);font-weight:700;font-size:14px;padding:10px 16px;border-radius:99px;z-index:400;box-shadow:0 8px 30px rgba(0,0,0,.3)}
 .bot-fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:150;display:inline-flex;align-items:center;gap:8px;border:0;border-radius:99px;padding:13px 18px;font:inherit;font-weight:800;font-size:14px;color:#fff;background:linear-gradient(135deg,var(--ac),var(--ac2));box-shadow:0 10px 30px var(--glow1);cursor:pointer}
 .bot-fab svg{width:20px;height:20px}.bot-fab:hover{filter:brightness(1.08)}.bot-fab:focus-visible,.bot button:focus-visible,.bot input:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
@@ -277,7 +277,7 @@ h3{font-size:20px}
 <div class="tape" id="tape"></div>
 
 <div class="card">
-  <div class="hero"><span id="heroLogo"></span><div><h1 id="hName"></h1><div class="tk" id="hSub"></div></div><button type="button" class="shr" id="shr" aria-label="Поделиться"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7.5 7.5L12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg><span id="shrt">Поделиться</span></button></div>
+  <div class="hero"><span id="heroLogo"></span><div><h1 id="hName"></h1><div class="tk" id="hSub"></div></div><button type="button" class="shr" id="shr" aria-label="Поделиться"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7.5 7.5L12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></button></div>
   <div class="pr"><div><div class="prw"><div class="price" id="price"></div><button type="button" class="mk" id="mk" aria-haspopup="dialog"></button></div><div class="chg" id="chg"></div></div><div class="rg" id="rg" role="group" aria-label="Диапазон графика"></div></div>
   <div class="row" id="pills"></div>
   <div id="chart" role="img" aria-label="График цены"></div><div id="ro"></div>
