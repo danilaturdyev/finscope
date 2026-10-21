@@ -55,8 +55,8 @@ async function build(i, env, SYMBOL, MIC) {
   const c = CFG[i];
   const base = 'time_series?symbol=' + encodeURIComponent(SYMBOL) + (MIC || '') + '&interval=' + c.iv + '&outputsize=' + c.n + '&timezone=UTC&order=ASC&format=JSON';
   let ts;
-  // Пре- и пост-маркет есть только на платных планах Twelve Data. Если план не позволяет — берём только обычные торги.
-  if (noPrepost && Date.now() < noPrepost) {
+  // Пре- и пост-маркет есть только на платных планах Twelve Data. По умолчанию их не запрашиваем (экономим лимит). Чтобы включить на платном плане, добавьте переменную PREPOST=1.
+  if (!env.PREPOST || (noPrepost && Date.now() < noPrepost)) {
     ts = await td(base, env);
   } else {
     try { ts = await td(base + '&prepost=true', env); noPrepost = 0; }

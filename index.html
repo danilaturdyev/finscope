@@ -358,7 +358,7 @@ function baseIdx(days){
 function chart(){
  const rg=$('rg');
  rg.innerHTML=RANGES.map(([n],i)=>`<button type="button" data-i="${i}" class="${i===RNG?'on':''}">${n}</button>`).join('');
- rg.onclick=e=>{const b=e.target.closest('button');if(b){RNG=+b.dataset.i;chart()}};
+ rg.onclick=e=>{const b=e.target.closest('button');if(b){const k=RNG=+b.dataset.i;chart();if(k>0&&k<=2&&!LIVE.ser[k])loadSeries(k).then(ok=>{if(ok&&RNG===k&&!LIVE.hover)chart()})}};
  if(RNG<=2&&!LIVE.ser[RNG]&&!LIVE.gave){if(CH){CH.remove();CH=null}$('chart').innerHTML='<div class="d" style="padding:48px 0;text-align:center">Загружаю живые цены…</div>';$('ro').innerHTML='';return}
  const L=RNG<=2?LIVE.ser[RNG]:null,intr=!!(L&&L.length>1),pts=intr?L:PTS.slice(baseIdx(RANGES[RNG][1])),b0=(intr&&RNG===0&&LIVE.prev)?LIVE.prev:pts[0][1],last=pts[pts.length-1][1],ch=(last/b0-1)*100,up=ch>=0,col=cssv(up?'--up':'--dn');
  const head=i=>{const v=pts[i][1],dl=v-b0,r=(v/b0-1)*100,u=dl>=0,c=$('chg');c.className='chg '+(u?'up':'dn');c.textContent=(u?'▲ ':'▼ ')+pct(r)+' ('+(u?'+':'−')+'$'+Math.abs(dl).toFixed(2)+') '+fromLbl(pts[0][0],intr&&RNG===0&&LIVE.prev);$('price').textContent='$'+v.toFixed(2)};
@@ -463,8 +463,12 @@ function liveBadge(){
  b.textContent=LIVE.ok?('● Живые данные · обновлено '+new Date(LIVE.t).toLocaleTimeString(LOC,{hour:'2-digit',minute:'2-digit'})):'';
 }
 async function liveRefresh(first){
- const ok=await Promise.all([loadSeries(0),loadSeries(1),loadSeries(2)]);
- for(let k=0;k<2&&!ok[0]&&!LIVE.ser[0];k++){await new Promise(r=>setTimeout(r,2500));ok[0]=await loadSeries(0)}
+ const tk0=LIVE.tk,ok=[await loadSeries(0)];
+ for(let k=0;k<2&&!ok[0]&&!LIVE.ser[0];k++){await new Promise(r=>setTimeout(r,4000));if(tk0!==LIVE.tk)return;ok[0]=await loadSeries(0)}
+ if(RNG===1||LIVE.ser[1])ok[1]=await loadSeries(1);
+ if(RNG===2||LIVE.ser[2])ok[2]=await loadSeries(2);
+ if(!ok[0]&&!LIVE.ser[0]&&(LIVE.rt||0)<6){LIVE.rt=(LIVE.rt||0)+1;setTimeout(()=>{if(LIVE.tk===tk0&&!$('stock').hidden&&!LIVE.ser[0])liveRefresh()},15000)}
+ if(ok[0])LIVE.rt=0;
  LIVE.gave=true;
  if(ok.some(Boolean)){liveBadge();const pp=document.getElementById('p0');if(pp){pp.value=curPrice().toFixed(2);calc()}}
  if(!$('stock').hidden&&!LIVE.hover&&RNG<=2)chart()
