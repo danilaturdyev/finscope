@@ -394,6 +394,8 @@ function view(k){
  const tab=CUR&&CUR.tabs.find(t=>t.k===k);if(!tab)return '';
  return tab.blocks.map(b=>b.card?cardH(b.card):b.g2?`<div class="g2">${b.g2.map(cardH).join('')}</div>`:b.scenarios?scenHtml(b.scenarios):b.d!=null?`<p class="d">${b.d}</p>`:'').join('');
 }
+// Дневной ряд заканчивается закрытием последней записанной сессии. Если есть свежая живая цена (из 1D-графика), подставляем её последней точкой, чтобы цена не менялась при переключении периодов.
+function withLive(p){try{const S=LIVE.ser[0];if(!S||!S.length||!p.length)return p;const t=S[S.length-1],d=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York'}).format(new Date(t[0]*1000)),l=p[p.length-1];if(l[0]<d)return p.concat([[d,t[1]]]);if(l[0]===d)return p.slice(0,-1).concat([[d,t[1]]])}catch(e){}return p}
 const curPrice=()=>{const L=(typeof LIVE!=='undefined'&&LIVE.ser)?LIVE.ser[0]:null;return L&&L.length?L[L.length-1][1]:PTS[PTS.length-1][1]};
 function calc(){
  const g=id=>parseFloat($(id).value)||0,p0=g('p0'),amt=g('amt'),sc=CUR.tabs.flatMap(t=>t.blocks).find(b=>b.scenarios).scenarios;
@@ -424,7 +426,7 @@ function chart(){
  rg.innerHTML=RANGES.map(([n],i)=>`<button type="button" data-i="${i}" class="${i===RNG?'on':''}">${n}</button>`).join('');
  rg.onclick=e=>{const b=e.target.closest('button');if(b){const k=RNG=+b.dataset.i;chart();if(k>0&&k<=2&&!LIVE.ser[k])loadSeries(k).then(ok=>{if(ok&&RNG===k&&!LIVE.hover)chart()})}};
  if(RNG<=2&&!LIVE.ser[RNG]&&!LIVE.gave){if(CH){CH.remove();CH=null}$('chart').innerHTML='<div class="d" style="padding:48px 0;text-align:center">Загружаю живые цены…</div>';$('ro').innerHTML='';return}
- const L=RNG<=2?LIVE.ser[RNG]:null,intr=!!(L&&L.length>1),pts=intr?L:PTS.slice(baseIdx(RNG<=2?30:RANGES[RNG][1])),b0=(intr&&RNG===0&&LIVE.prev)?LIVE.prev:pts[0][1],last=pts[pts.length-1][1],ch=(last/b0-1)*100,up=ch>=0,col=cssv(up?'--up':'--dn');
+ const L=RNG<=2?LIVE.ser[RNG]:null,intr=!!(L&&L.length>1),pts=intr?L:withLive(PTS.slice(baseIdx(RNG<=2?30:RANGES[RNG][1]))),b0=(intr&&RNG===0&&LIVE.prev)?LIVE.prev:pts[0][1],last=pts[pts.length-1][1],ch=(last/b0-1)*100,up=ch>=0,col=cssv(up?'--up':'--dn');
  {const lv=lvEl();if(RNG<=2&&!intr)lv.textContent='Живые цены сейчас недоступны, показаны дневные цены за месяц'}
  const head=i=>{const v=pts[i][1],dl=v-b0,r=(v/b0-1)*100,u=dl>=0,c=$('chg');c.className='chg '+(u?'up':'dn');c.textContent=(u?'▲ ':'▼ ')+pct(r)+' ('+(u?'+':'−')+'$'+Math.abs(dl).toFixed(2)+') '+fromLbl(pts[0][0],intr&&RNG===0&&LIVE.prev);$('price').textContent='$'+v.toFixed(2)};
  head(pts.length-1);
