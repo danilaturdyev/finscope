@@ -622,19 +622,19 @@ var BOT_T={
  en:{sub:'Explains terms and the analyses on this site',ph:'Ask a question',dis:'Answers are written by AI and it can be wrong. This is not investment advice.',hi:'Hi! I am FinScopeBot. I can explain terms and the analyses on this site. What would you like to ask?',typ:'Typing…',x:'Close',send:'Send',
   err:{'bot-off':'The bot is not connected yet. Please try later.',limit:'You have asked many questions. Please try again in an hour.',quota:'The free daily limit of the bot is used up. Please try tomorrow.',fail:'Could not answer. Please try again.'},
   chipsS:['What does the company do?','What are the main risks?','How do I read the verdict?','What is P/E?'],chipsH:['Which stocks are on the site?','How do I read the verdict?','What is P/E?','Is this investment advice?']}};
-var BOTH=[],BOTBUSY=false;
+var BOTH=[],BOTBUSY=false,BOTUSED=0;
 function botT(){return BOT_T[LANG==='en'?'en':'ru']}
 function botLabels(){
  const t=botT();$('botS').textContent=t.sub;$('boti').placeholder=t.ph;$('botd').textContent=t.dis;$('botx').setAttribute('aria-label',t.x);$('bots').setAttribute('aria-label',t.send);
  const first=$('botm').firstElementChild;if(first&&first.dataset.hi)first.textContent=t.hi;
- const onStock=!$('stock').hidden&&CUR;$('botc').innerHTML=(onStock?t.chipsS:t.chipsH).map(q=>`<button type="button">${q}</button>`).join('');
+ const onStock=!$('stock').hidden&&CUR;$('botc').innerHTML=BOTUSED?'':(onStock?t.chipsS:t.chipsH).map(q=>`<button type="button">${q}</button>`).join('');
 }
 function botAdd(role,text,cls){const d=document.createElement('div');d.className='bm '+role+(cls?' '+cls:'');d.textContent=text;$('botm').append(d);$('botm').scrollTop=1e9;return d}
 function botOpen(){$('botp').hidden=false;$('botb').setAttribute('aria-expanded','true');if(!$('botm').children.length){const d=botAdd('a',botT().hi);d.dataset.hi='1'}botLabels();$('boti').focus()}
 function botClose(){$('botp').hidden=true;$('botb').setAttribute('aria-expanded','false');$('botb').focus()}
 async function botAsk(q){
  q=q.trim().slice(0,400);if(!q||BOTBUSY)return;BOTBUSY=true;$('bots').disabled=true;
- botAdd('u',q);$('botc').innerHTML='';const ty=botAdd('a',botT().typ,'t');
+ BOTUSED=1;botAdd('u',q);$('botc').innerHTML='';const ty=botAdd('a',botT().typ,'t');
  let out;
  try{
   const r=await fetch('/api/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q,t:(!$('stock').hidden&&CUR)?CUR.t:'',h:BOTH.slice(-6)})});
