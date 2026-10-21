@@ -530,7 +530,7 @@ async function loadSeries(r){
   if(tk!==LIVE.tk)return false;
   if(!j||!Array.isArray(j.points)||j.points.length<2)return false;
   LIVE.ser[r]=j.points.map(p=>[p[0],p[1]]);
-  if(r===0){LIVE.prev=j.prevClose||prevFromDaily(LIVE.ser[0]);setSess(LIVE.ser[0],LIVE.prev)}
+  if(r===0){LIVE.prev=j.prevClose||prevFromDaily(LIVE.ser[0]);setSess(LIVE.ser[0],LIVE.prev);syncQuote(tk,LIVE.ser[0],LIVE.prev)}
   LIVE.ok=true;LIVE.t=Date.now();return true;
  }catch(e){return false}
 }
@@ -687,16 +687,20 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('botp').hidden&&
 
 
 /* ===== Главная: карточки акций, фильтр по отрасли, сортировка ===== */
-let QT={},QLIVE=0,QCL=0,MKF=-1,MKS='n';
+let QT={},QSER={},LASTQ=0,QLIVE=0,QCL=0,MKF=-1,MKS='n';
 async function loadQuotes(){try{const q=await getJSON(DATA_BASE+'quotes.json?'+Math.floor(Date.now()/120000));QT=q&&typeof q==='object'?q:{}}catch(e){QT={}}}
 async function liveQuotes(){
  try{
   const r=await fetch('/api/quotes');if(!r.ok)return;const j=await r.json();
-  if(j&&j.live&&j.q){Object.keys(j.q).forEach(t=>{QT[t]=Object.assign({},QT[t],j.q[t])});QLIVE=j.at||Date.now();QCL=j.close?1:0;hmRender()}
+  if(j&&j.live&&j.q){Object.keys(j.q).forEach(t=>{if(QSER[t]&&QSER[t]>(j.at||0))return;QT[t]=Object.assign({},QT[t],j.q[t])});QLIVE=j.at||Date.now();QCL=j.close?1:0;hmRender()}
   else if(QLIVE){QLIVE=0;QCL=0;await loadQuotes();hmRender()}
  }catch(e){}
 }
 setInterval(()=>{if(!document.hidden&&!$('home').hidden)liveQuotes()},300000);
+// Возврат на главную: освежаем цены (иначе после долгого просмотра акции карточки показывают старые).
+function refreshHome(){hmRender();if(Date.now()-LASTQ>45000){LASTQ=Date.now();liveQuotes()}}
+// Цена из живого графика акции — тот же источник, что на странице акции: подставляем её в карточку, чтобы главная и страница совпадали.
+function syncQuote(t,pts,prev){try{if(!t||!pts||!pts.length)return;const c=pts[pts.length-1][1];if(!isFinite(c))return;const o=QT[t]||{};const p=prev||o.p;if(!(p>0))return;QT[t]=Object.assign({},o,{c,p});QSER[t]=Date.now();if(typeof hmRender==='function'&&REG.length)hmRender()}catch(e){}}
 function hmRender(){
  const box=$('hmk');if(!box)return;if(!REG.length){box.hidden=true;return}box.hidden=false;
  const en=LANG==='en',secs=[...new Set(REG.map(x=>x.sector).filter(Boolean))];
@@ -925,7 +929,7 @@ function showPage(v){
 async function route(){
  const id=++ROUTING;
  const h=decodeURIComponent(location.hash.replace(/^#\/?/,'')).trim();
- if(!h){showPage('home');hit('home');return}
+ if(!h){showPage('home');hit('home');refreshHome();return}
  if(h==='about'){showPage('about');return}
  if(h==='legal'){showPage('legal');return}
  const t=h.toUpperCase();
