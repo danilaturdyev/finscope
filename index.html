@@ -31,6 +31,8 @@ main{max-width:820px;margin:0 auto;padding:16px 16px 60px}
 .tape div{display:inline-block;padding:11px 0;animation:tp 45s linear infinite}.tape span{margin:0 18px;color:var(--mu)}.tape b{color:var(--tx)}
 @keyframes tp{to{transform:translateX(-50%)}}
 .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+.ssr{margin-bottom:12px}.ssr .search{padding:4px 4px 4px 14px}.ssr .search input{font-size:16px;padding:8px 4px}.ssr .search button{padding:10px 18px}.ssr .sg{position:relative;z-index:30}
+@media (min-width:900px){.ssr{max-width:560px}}
 .chip{flex:none;padding:7px 14px;border-radius:99px;background:var(--chip);font-size:14px;font-weight:600;color:var(--mu)}a.chip{text-decoration:none;cursor:pointer}.chip.on{background:var(--tx);color:var(--bg)}
 .card{background:var(--card);border:1px solid var(--bd);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:26px;padding:20px;margin-bottom:12px;animation:up .5s ease both}
 @keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
@@ -219,7 +221,7 @@ main{max-width:1240px;padding:22px 40px 80px}
 .steps{grid-template-columns:repeat(3,1fr);gap:18px}.step{padding:24px}
 /* страница акции: слева график, справа вердикт */
 #stock{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(420px,1fr);column-gap:24px;align-items:start}
-#stock>.live,#stock>.chips,#stock>.tape,#stock>.tabs,#stock>#panel,#stock>.note{grid-column:1/-1}
+#stock>.live,#stock>.ssr,#stock>.tape,#stock>.tabs,#stock>#panel,#stock>.note{grid-column:1/-1}
 #stock>.card{margin-bottom:0}
 #stock>.card:not(.vd){grid-column:1;grid-row:4;padding:28px}
 #stock>.vd{grid-column:2;grid-row:4;position:static;align-self:stretch;padding:36px 32px;display:flex;flex-direction:column;justify-content:flex-start}
@@ -275,8 +277,7 @@ h3{font-size:20px}
   <div class="mk-bk" id="mkb" hidden><button type="button" id="mkbb">← На главную</button><span id="mkbt"></span></div>
   <div id="mkr"></div>
   <div class="mk-g" id="mkg"></div>
-  <div class="mk-all" id="mka" hidden><button type="button" id="mkab"></button></div>
-  <p class="d mk-n" id="mkn">Цены на закрытие последней торговой сессии.</p>
+   <p class="d mk-n" id="mkn">Цены на закрытие последней торговой сессии.</p>
  </section>
  <div class="feat">
   <div class="card"><div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><h3>Отчёты и цифры</h3><p>Данные из отчётов компании в SEC, дневные цены, итоги по годам, долг и денежные запасы.</p></div>
@@ -317,7 +318,7 @@ h3{font-size:20px}
 </section>
 <section id="stock" hidden>
 <div class="live" style="margin-bottom:12px"><i id="mdot"></i><span id="snap"></span></div>
-<div class="chips" id="chips"></div>
+<div class="ssr"><form class="search" id="sf2" role="search" autocomplete="off"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="q2" type="search" placeholder="Тикер или название" aria-label="Поиск акции" autocomplete="off" spellcheck="false"><button type="submit">Найти</button></form><div class="sg" id="sg2" hidden></div><div class="msg" id="sm2" role="status" hidden></div></div>
 <div class="tape" id="tape"></div>
 
 <div class="card">
@@ -761,12 +762,10 @@ function hmRender(){
   const card=x=>{const q=QT[x.t],c=chg(x);return `<a class="rc" href="/${x.t}" data-t="${x.t}"><div class="rct">${logo(x)}<div class="rcn"><b>${x.t}</b><span>${x.name}</span></div></div><div class="rcp"><b>${q?'$'+q.c.toFixed(2):''}</b><span class="${c==null?'':c>=0?'pos':'neg'}">${fmt(c)}</span></div>${spark(x.t)}</a>`};
   const withC=REG.filter(x=>chg(x)!=null);
   const up=withC.filter(x=>chg(x)>0).sort((a,b)=>chg(b)-chg(a)).slice(0,5),dn=withC.filter(x=>chg(x)<0).sort((a,b)=>chg(a)-chg(b)).slice(0,5);
-  const row=(t,col,l)=>l.length?`<div class="mk-rh"><h3><i style="background:${col}"></i>${t}</h3><span>${en?'Top 5':'Топ-5'}</span></div><div class="mk-row">${l.map(card).join('')}</div>`:'';
+  const row=(t,col,l)=>l.length?`<div class="mk-rh"><h3><i style="background:${col}"></i>${t}</h3></div><div class="mk-row">${l.map(card).join('')}</div>`:'';
   rows=row(en?'Rising today':'Растут сегодня','var(--up)',up)+row(en?'Falling today':'Падают сегодня','var(--dn)',dn);
  }
  $('mkr').innerHTML=rows;
- $('mka').hidden=!(home&&ROWS);
- if(home&&ROWS)$('mkab').textContent=(en?'All stocks (':'Все акции (')+REG.length+') →';
  // сетка карточек: в разделе «Все акции» и в секторе
  let L=home?[]:REG.filter(x=>MKV!=='s'||x.sector===secs[MKF]);
  L=L.slice().sort((a,b)=>MKS==='n'?String(a.name).localeCompare(String(b.name)):MKS==='u'?(chg(b)??-1e9)-(chg(a)??-1e9):(chg(a)??1e9)-(chg(b)??1e9));
@@ -781,7 +780,6 @@ $('mkf').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
 document.addEventListener('click',e=>{if(MKO&&!e.target.closest('.mk-f-w')){MKO=false;hmRender()}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&MKO){MKO=false;hmRender()}});
 $('mkbb').addEventListener('click',()=>{MKV='h';MKF=-1;hmRender()});
-$('mkab').addEventListener('click',()=>{MKV='a';MKF=-1;hmRender()});
 $('mks').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;MKS=b.dataset.s;hmRender()});
 $('mkr').addEventListener('click',e=>{const a=e.target.closest('a.rc');if(!a||e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;e.preventDefault();openStock(a.dataset.t)});
 $('mkg').addEventListener('click',e=>{const a=e.target.closest('a.mkc');if(!a||e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;e.preventDefault();openStock(a.dataset.t)});
@@ -955,7 +953,7 @@ function renderStatic(){
  chips();
 }
 function chips(){
- $('chips').innerHTML=REG.map(x=>`<a class="chip${CUR&&CUR.t===x.t?' on':''}" href="#/${x.t}">${x.t}</a>`).join('')+'<span class="chip">+ любая акция: напиши в чате</span>';
+ 
 }
 function recent(){try{const r=JSON.parse(localStorage.getItem('fs_recent')||'[]');return Array.isArray(r)?r.filter(x=>typeof x==='string').slice(0,5):[]}catch(e){return[]}}
 function addRecent(t){try{localStorage.setItem('fs_recent',JSON.stringify([t].concat(recent().filter(x=>x!==t)).slice(0,5)))}catch(e){}}
@@ -1010,21 +1008,25 @@ function go(v){
  const t=v==='home'?'#/':v==='about'?'#/about':v==='legal'?'#/legal':'#/'+((CUR&&CUR.t)||(REG[0]&&REG[0].t)||'');
  if(location.hash===t||(v==='home'&&!location.hash))route();else location.hash=t;
 }
-function openStock(t){$('sg').hidden=true;$('sm').hidden=true;const T=t||(REG[0]&&REG[0].t);if(T)location.hash='#/'+T}
+function openStock(t){['sg','sm','sg2','sm2'].forEach(i=>$(i).hidden=true);$('q2').value='';const T=t||(REG[0]&&REG[0].t);if(T)location.hash='#/'+T}
 async function loadReg(){REG=await getJSON(DATA_BASE+'stocks.json?'+Math.floor(Date.now()/120000));if(!Array.isArray(REG))REG=[];buildRX(Object.assign({},...REG.map(x=>x.en||{})))}
-function suggest(){
- const q=$('q').value,r=findStocks(q),sg=$('sg');$('sm').hidden=true;
- if(!r.length){sg.hidden=true;return}
- sg.innerHTML=r.map(x=>`<button type="button" data-t="${x.t}">${x.logo?`<img${x.logoShape==='round'?' class="round"':''} alt="" src="${logoUrl(x)}">`:''}<div><b>${x.t} · ${x.name}</b><span>${x.sub||''}</span></div></button>`).join('');
- sg.hidden=false;
+function bindSearch(qi,fi,gi,mi){
+ const Q=$(qi),G=$(gi),M=$(mi);
+ Q.addEventListener('input',()=>{
+  const r=findStocks(Q.value);M.hidden=true;
+  if(!r.length){G.hidden=true;return}
+  G.innerHTML=r.map(x=>`<button type="button" data-t="${x.t}">${x.logo?`<img${x.logoShape==='round'?' class="round"':''} alt="" src="${logoUrl(x)}">`:''}<div><b>${x.t} · ${x.name}</b><span>${x.sub||''}</span></div></button>`).join('');
+  G.hidden=false;
+ });
+ G.addEventListener('click',e=>{const b=e.target.closest('button');if(b)openStock(b.dataset.t)});
+ $(fi).addEventListener('submit',e=>{
+  e.preventDefault();const q=Q.value.trim();if(!q)return;
+  const f=findStocks(q);if(f.length){openStock(f[0].t);return}
+  G.hidden=true;M.hidden=false;M.textContent='«'+q+'» пока нет в базе. Другие акции добавляются по запросу владельца сайта.';
+ });
 }
-$('q').addEventListener('input',suggest);
-$('sg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)openStock(b.dataset.t)});
-$('sf').addEventListener('submit',e=>{
- e.preventDefault();const q=$('q').value.trim();if(!q)return;
- const f=findStocks(q);if(f.length){openStock(f[0].t);return}
- $('sg').hidden=true;const m=$('sm');m.hidden=false;m.textContent='«'+q+'» пока нет в базе. Другие акции добавляются по запросу владельца сайта.';
-});
+bindSearch('q','sf','sg','sm');bindSearch('q2','sf2','sg2','sm2');
+document.addEventListener('click',e=>{if(!e.target.closest('.ssr'))$('sg2').hidden=true});
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
 $('goHome').addEventListener('click',()=>go('home'));
 $('tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(b)show(b.dataset.k)});
