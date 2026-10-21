@@ -101,6 +101,15 @@ try {
   else { try { new Function(m[m.length - 1][1]); } catch (e) { err('index.html', 'ошибка синтаксиса JS: ' + e.message); } }
   if (/TD_KEY\s*=|apikey=\w{8,}/i.test(h)) err('index.html', 'похоже на ключ');
 } catch (e) { err('index.html', 'не читается'); }
+// quotes.json должен совпадать с последними ценами акций (node tools/build_quotes.mjs)
+try {
+  const q = read('data/quotes.json');
+  for (const r of reg || []) {
+    if (!r.sector) err('data/stocks.json', r.t + ': нет sector (отрасль для главной страницы)');
+    const S = read('data/' + r.t + '.json'); const d = S && S.daily; const last = d && d[d.length - 1];
+    if (!q[r.t] || !last || q[r.t].c !== +last[4] || q[r.t].d !== last[0]) err('data/quotes.json', r.t + ': устарел, запустите node tools/build_quotes.mjs');
+  }
+} catch (e) { err('data/quotes.json', 'нет файла или он повреждён, запустите node tools/build_quotes.mjs'); }
 warns.forEach(w => console.log('ВНИМАНИЕ', w));
 if (errs.length) { console.log('ОШИБКИ:\n' + errs.map(e => ' - ' + e).join('\n')); process.exit(1); }
 console.log('OK: данные в порядке (' + (reg ? reg.length : 0) + ' акц.)');

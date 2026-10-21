@@ -104,18 +104,21 @@ async function series(u, env, ctx) {
 
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 // Страница для отправки в мессенджеры: /s/PLTR. Отдаёт сайт с превью (название, вердикт, картинка) и открывает нужную акцию.
-async function share(u, T) {
-  if (!(await allowed(T))) return Response.redirect(u.origin + '/', 302);
+async function share(u, T, clean) {
+  if (!(await allowed(T))) return clean ? null : Response.redirect(u.origin + '/', 302);
   let S = null;
   try { const r = await fetch(BASE + 'data/' + T + '.json', { cf: { cacheTtl: 300, cacheEverything: true } }); if (r.ok) S = await r.json(); } catch (e) {}
   let html = await page();
   const title = (S ? S.name + ' (' + T + ')' : T) + ' · FinScope';
   const desc = S && S.verdict ? S.verdict.title + '. ' + String(S.verdict.text || '').slice(0, 160) : 'Акции понятным языком';
   const img = BASE + 'data/og/' + T + '.png';
-  const meta = '<meta property="og:type" content="website"><meta property="og:site_name" content="FinScope"><meta property="og:title" content="' + esc(title) + '"><meta property="og:description" content="' + esc(desc) + '"><meta property="og:url" content="' + esc(u.origin + '/s/' + T) + '"><meta property="og:image" content="' + esc(img) + '"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="' + esc(title) + '"><meta name="twitter:description" content="' + esc(desc) + '"><meta name="twitter:image" content="' + esc(img) + '">';
+  const meta = '<meta property="og:type" content="website"><meta property="og:site_name" content="FinScope"><meta property="og:title" content="' + esc(title) + '"><meta property="og:description" content="' + esc(desc) + '"><meta property="og:url" content="' + esc(u.origin + (clean ? '/' : '/s/') + T) + '"><meta property="og:image" content="' + esc(img) + '"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="' + esc(title) + '"><meta name="twitter:description" content="' + esc(desc) + '"><meta name="twitter:image" content="' + esc(img) + '">';
   const go = '<script>history.replaceState(null,"","/#/' + T + '")</script>';
   html = html.replace(/<title>[\s\S]*?<\/title>/, '<title>' + esc(title) + '</title>');
-  html = html.replace('<head>', '<head>' + meta + go);
+  const seo = '<link rel="canonical" href="' + esc(u.origin + '/' + T) + '"><meta name="description" content="' + esc(desc) + '">';
+  html = html.replace(/<meta name="description"[^>]*>/, '');
+  html = html.replace('<head>', '<head>' + seo + meta + go);
+  if (S) html = html.replace(/<body[^>]*>/, m => m + '<noscript><h1>' + esc(S.name) + ' (' + esc(T) + ')</h1><p>' + esc(S.sub || '') + '</p>' + (S.verdict ? '<h2>' + esc(S.verdict.title) + '</h2><p>' + esc(S.verdict.text) + '</p>' : '') + '<p>FinScope: разбор отчётности, новостей, опционов и сценариев цены. Не является инвестиционной рекомендацией.</p></noscript>');
   return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=300' } });
 }
 // Счётчик просмотров без cookie и без личных данных: считаем только страницы (home или тикер) по дням. Нужен KV с привязкой STATS.
@@ -212,6 +215,12 @@ async function chat(req, env, ctx) {
     return new Response(JSON.stringify({ error: /limit|quota|neuron|capacity|3036|4006/i.test(m) ? 'quota' : 'fail', d: m.slice(0, 300) }), { status: 502, headers: H });
   }
 }
+async function sitemap(u) {
+  let l = []; try { const r = await fetch(BASE + 'data/stocks.json', { cf: { cacheTtl: 300, cacheEverything: true } }); if (r.ok) l = await r.json(); } catch (e) {}
+  const urls = ['/'].concat((Array.isArray(l) ? l : []).map(x => '/' + x.t));
+  const xml = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + urls.map(p => '<url><loc>' + esc(u.origin + p) + '</loc><changefreq>daily</changefreq></url>').join('') + '</urlset>';
+  return new Response(xml, { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'public, max-age=3600' } });
+}
 export default {
   async fetch(req, env, ctx) {
     const u = new URL(req.url);
@@ -220,6 +229,9 @@ export default {
     if (u.pathname === '/api/hit') return hit(u, env);
     if (u.pathname === '/stats') return stats(u, env);
     if (u.pathname.startsWith('/s/')) return share(u, u.pathname.slice(3).toUpperCase());
+    if (u.pathname === '/sitemap.xml') return sitemap(u);
+    if (u.pathname === '/robots.txt') return new Response('User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /stats\nSitemap: ' + u.origin + '/sitemap.xml\n', { headers: { 'content-type': 'text/plain; charset=utf-8' } });
+    if (/^\/[A-Za-z][A-Za-z0-9.\-]{0,9}$/.test(u.pathname)) { const r = await share(u, u.pathname.slice(1).toUpperCase(), true); if (r) return r; }
     if (u.pathname === '/' || u.pathname === '/index.html')
       return new Response(await page(), { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=60, stale-while-revalidate=600' } });
     return new Response('Not found', { status: 404 });
