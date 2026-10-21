@@ -6,8 +6,8 @@
   "keep_vars": true,
   "observability": { "enabled": true },
   // Привязка Workers AI для FinScopeBot (переменная AI)
-  "ai": { "binding": "AI" }
-  // Счётчик просмотров: после создания KV-хранилища STATS добавьте сюда и закоммитьте:
-  // "kv_namespaces": [{ "binding": "STATS", "id": "<ID хранилища из Cloudflare>" }]
+  "ai": { "binding": "AI" },
+  // Счётчик просмотров (без cookie): страница статистики /stats?key=STATS_KEY
+  "kv_namespaces": [{ "binding": "STATS", "id": "8cb27f8bd76a4661a2939120bd02cf5c" }],
   // Секреты TD_KEY и STATS_KEY остаются в настройках Cloudflare, в репозиторий их не кладут.
 }
