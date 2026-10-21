@@ -36,6 +36,7 @@ function checkStock(t) {
   if (JSON.stringify(S).includes('TODO')) err(f, 'остались метки TODO, акцию нельзя публиковать');
   if (S.t !== t) err(f, 'поле t (' + S.t + ') не совпадает с именем файла');
   if (!ISO.test(S.asof || '')) err(f, 'asof должен быть датой ГГГГ-ММ-ДД');
+  if (S.reviewed != null && !ISO.test(S.reviewed)) err(f, 'reviewed должен быть датой ГГГГ-ММ-ДД (дата последнего полного разбора)');
   // цены
   const d = S.daily || [];
   if (!Array.isArray(d) || d.length < 2) err(f, 'daily: нужно минимум 2 строки');

@@ -88,6 +88,7 @@ main{max-width:820px;margin:0 auto;padding:16px 16px 60px}
 .hero h1{margin:0;font-size:20px}.tk{color:var(--mu);font-size:13px}
 .price{font-family:"Manrope","Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-size:48px;font-weight:800;letter-spacing:-.03em;margin:14px 0 2px;line-height:1.05}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.rev{margin:8px 0 0;color:var(--mu);font-size:12.5px}.rev:empty{display:none}
 .pill{padding:5px 11px;border-radius:99px;font-size:12px;font-weight:700;background:var(--chip)}
 .neg{color:var(--bad)}.pos{color:var(--ok)}.mid{color:var(--mid)}
 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
@@ -305,6 +306,7 @@ h3{font-size:20px}
   <div class="hero"><span id="heroLogo"></span><div><h1 id="hName"></h1><div class="tk" id="hSub"></div></div><button type="button" class="shr" id="shr" aria-label="Поделиться"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7.5 7.5L12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></button></div>
   <div class="pr"><div><div class="prw"><div class="price" id="price"></div><button type="button" class="mk" id="mk" aria-haspopup="dialog"></button></div><div class="chg" id="chg"></div></div><div class="rg" id="rg" role="group" aria-label="Диапазон графика"></div></div>
   <div class="row" id="pills"></div>
+  <p class="rev" id="rev"></p>
   <div id="chart" role="img" aria-label="График цены"></div><div id="ro"></div>
   <div class="sess"><div><small>Пре-маркет · 20 окт.</small><b class="mono">нет данных</b></div><div><small>Закрытие · 20 окт.</small><b class="mono">$7.48 (+1,42%)</b></div><div><small>Пост-маркет · 20 окт.</small><b class="mono up">$7.61 (+1,74%)</b></div></div>
   <p class="d" id="histnote" style="margin:10px 0 0">Дневные цены есть с 3 августа по 20 октября 2026 года, раньше только отдельные точки и итоги лет, и между ними линия прямая. Минутных данных и пре-маркета нет, пост-маркет есть только за 20 октября.</p>
@@ -601,6 +603,7 @@ function langBtn(){
 }
 function applyLang(){
  document.documentElement.lang=LANG;
+ if(typeof revText==='function')revText();
  if(typeof hmRender==='function'&&typeof REG!=='undefined'&&REG.length&&typeof QT!=='undefined')hmRender();
  if(LANG==='en'){trNode(document.body)}
  else{
@@ -850,6 +853,12 @@ function sessStatic(){
  const rows=e?[['Пре-маркет',e.pre,prev],['Закрытие',e.close,prev],['Пост-маркет',e.post,e.close||prev]]:[['Пре-маркет',null,0],['Закрытие',S.close,0],['Пост-маркет',null,0]];
  rows.forEach(([n,v,b],k)=>{if(!bs[k])return;bs[k].querySelector('small').textContent=n+(day?' · '+day:'');const bb=bs[k].querySelector('b');bb.textContent=f(v,b);bb.className='mono '+c(v,b)});
 }
+function revText(){
+ const el=$('rev');if(!el)return;const S=typeof CUR!=='undefined'?CUR:null,d=S&&(S.reviewed||S.updated);
+ if(!d||!/^\d{4}-\d\d-\d\d$/.test(d)){el.textContent='';return}
+ const t=new Date(d+'T12:00:00').toLocaleDateString(LANG==='en'?'en-GB':'ru-RU',{day:'numeric',month:'short'});
+ el.textContent=(LANG==='en'?'Analysis updated ':'Разбор обновлён ')+t;
+}
 function renderStatic(){
  const S=CUR;
  $('heroLogo').outerHTML=S.logo?`<img class="avl${S.logoShape==='round'?' round':''}" id="heroLogo" alt="Логотип ${S.t}" src="${logoUrl(S)}">`:`<div class="av" id="heroLogo">${S.t[0]}</div>`;
@@ -858,7 +867,7 @@ function renderStatic(){
  $('pills').innerHTML=(S.pills||[]).map(p=>`<span class="pill${p.c?' '+p.c:''}">${p.t}</span>`).join('');
  $('chart').setAttribute('aria-label','График цены '+S.t);
  sessStatic();
- $('histnote').textContent=S.histnote||'';
+ $('histnote').textContent=S.histnote||'';revText();
  $('vTitle').textContent=S.verdict.title;$('vText').textContent=S.verdict.text;
  mkRender();
  $('tabs').innerHTML=TABS.map(([k,n])=>`<button class="tab" role="tab" data-k="${k}">${n}</button>`).join('');

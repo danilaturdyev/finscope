@@ -22,7 +22,7 @@ const TODO = 'TODO: заполнить';
 const card = (h, ...parts) => ({ card: { h, parts } });
 const tab = (k, name, ...blocks) => ({ k, name, blocks });
 const S = {
-  t, name, legal, exch, sub: exch + ': ' + t + ' · ' + TODO, asof: last[0], updated: today,
+  t, name, legal, exch, sub: exch + ': ' + t + ' · ' + TODO, asof: last[0], updated: today, reviewed: today,
   ext: { date: last[0], close: last[4], pre: null, post: null }, daily,
   pills: [{ t: 'закрытие $' + last[4].toFixed(2) + ' (' + pct + ')', c: chg >= 0 ? 'up' : 'dn' }],
   verdict: { title: TODO + ': вердикт одной фразой', text: TODO + ': 2-3 предложения, что сейчас происходит с компанией', pil: [['Фундамент', 3, TODO], ['Новости и макро', 3, TODO], ['Опционы', 3, TODO], ['Потенциал роста', 3, TODO], ['Риск потерь', 3, TODO]] },
