@@ -155,7 +155,12 @@ main{max-width:1240px;padding:22px 40px 80px}
 #stock>.live,#stock>.chips,#stock>.tape,#stock>.tabs,#stock>#panel,#stock>.note{grid-column:1/-1}
 #stock>.card{margin-bottom:0}
 #stock>.card:not(.vd){grid-column:1;grid-row:4;padding:28px}
-#stock>.vd{grid-column:2;grid-row:4;position:static;align-self:stretch;padding:36px 32px;display:flex;flex-direction:column;justify-content:center}
+#stock>.vd{grid-column:2;grid-row:4;position:static;align-self:stretch;padding:36px 32px;display:flex;flex-direction:column;justify-content:flex-start}
+#stock>.vd #pl{margin-top:auto;margin-bottom:4px;padding-top:26px;border-top:1px solid rgba(255,255,255,.16)}
+#stock>.vd .pl{grid-template-columns:1fr auto;gap:8px 16px;font-size:18px;font-weight:600;margin:18px 0}
+#stock>.vd .pl .seg{grid-column:1/-1;grid-row:2}#stock>.vd .pl em{grid-column:2;grid-row:1}#stock>.vd h2+p{margin-bottom:32px}
+#stock>.vd .seg{gap:6px}#stock>.vd .seg i{height:12px;border-radius:10px}
+#stock>.vd .pl em{font-size:16px;font-weight:700}
 #stock>.tabs{margin:28px 0 16px;flex-wrap:wrap;overflow:visible}
 .tab{padding:10px 20px;font-size:15px}
 #stock .hero h1{font-size:26px}
@@ -164,8 +169,8 @@ main{max-width:1240px;padding:22px 40px 80px}
 .chg{font-size:17px}
 #chart{height:480px}
 #ro{min-height:96px}
-.vd h2{font-size:34px;line-height:1.15}.vd p{font-size:18px;line-height:1.55}.vd .lbl{font-size:13px}
-.pl{grid-template-columns:140px 1fr 96px;font-size:15px;margin:13px 0}.seg i{height:10px}
+.vd h2{font-size:34px;line-height:1.15}.vd p{font-size:19px;line-height:1.6}.vd .lbl{font-size:13px}
+.pl{grid-template-columns:140px 1fr 96px;font-size:15px;margin:13px 0}
 /* вкладки: просторные сетки */
 .g2{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
 .card{padding:26px}
