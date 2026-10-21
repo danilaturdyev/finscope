@@ -21,6 +21,9 @@ if (reg) {
       if (seen.has(r.t)) err('data/stocks.json', 'тикер повторяется: ' + r.t); seen.add(r.t);
       if (!r.name) err('data/stocks.json', r.t + ': нет name');
       if (r.logo && !fs.existsSync(path.join(root, 'data', r.logo))) err('data/stocks.json', r.t + ': нет файла логотипа ' + r.logo);
+      if (r.logoShape && r.logoShape !== 'round') err('data/stocks.json', r.t + ': logoShape может быть только round');
+      if (r.td && (typeof r.td.symbol !== 'string' || (r.td.mic != null && typeof r.td.mic !== 'string'))) err('data/stocks.json', r.t + ': td должен быть {symbol, mic}');
+      if (r.en && Object.values(r.en).some(v => typeof v !== 'string' || /[А-Яа-яЁё]/.test(v))) err('data/stocks.json', r.t + ': en должен содержать только английские строки');
       checkStock(r.t);
     }
   }
@@ -29,6 +32,7 @@ function checkStock(t) {
   const f = 'data/' + t + '.json', S = read(f);
   if (!S) return;
   for (const k of ['t', 'name', 'asof', 'daily', 'verdict', 'tape', 'tabs']) if (S[k] == null) err(f, 'нет поля ' + k);
+  if (S.en && Object.values(S.en).some(v => typeof v !== 'string' || /[А-Яа-яЁё]/.test(v) || /\d,\d/.test(v))) err(f, 'en: только английские строки, без запятой между цифрами (используйте пробел или точку)');
   if (S.t !== t) err(f, 'поле t (' + S.t + ') не совпадает с именем файла');
   if (!ISO.test(S.asof || '')) err(f, 'asof должен быть датой ГГГГ-ММ-ДД');
   // цены

@@ -18,6 +18,14 @@ async function allowed(t) {
   } catch (e) {}
   return t === 'MARA';
 }
+// Доп. параметры источника для тикера (например, биржа XNYS, чтобы Shell не путался с лондонской бумагой). Читаются из data/stocks.json, поле td.
+async function tdExtra(t) {
+  try {
+    const r = await fetch(BASE + 'data/stocks.json', { cf: { cacheTtl: 300, cacheEverything: true } });
+    if (r.ok) { const l = await r.json(); const x = Array.isArray(l) && l.find(y => y.t === t); const e = x && x.td; if (e) { let q = ''; if (e.symbol) q += '&symbol=' + encodeURIComponent(e.symbol); if (e.mic) q += '&mic_code=' + encodeURIComponent(e.mic); return { sym: e.symbol || t, mic: e.mic ? '&mic_code=' + encodeURIComponent(e.mic) : '' }; } }
+  } catch (e) {}
+  return { sym: t, mic: '' };
+}
 let noPrepost = 0;
 const CFG = [
   { iv: '1min',  n: 1000, days: 1,  ttl: 60  },   // 1Д: минутные цены, пре- и пост-маркет
@@ -43,9 +51,9 @@ async function td(path, env) {
   if (!r.ok || j.status === 'error') throw new Error((j && j.message) || ('HTTP ' + r.status));
   return j;
 }
-async function build(i, env, SYMBOL) {
+async function build(i, env, SYMBOL, MIC) {
   const c = CFG[i];
-  const base = 'time_series?symbol=' + encodeURIComponent(SYMBOL) + '&interval=' + c.iv + '&outputsize=' + c.n + '&timezone=UTC&order=ASC&format=JSON';
+  const base = 'time_series?symbol=' + encodeURIComponent(SYMBOL) + (MIC || '') + '&interval=' + c.iv + '&outputsize=' + c.n + '&timezone=UTC&order=ASC&format=JSON';
   let ts;
   // Пре- и пост-маркет есть только на платных планах Twelve Data. Если план не позволяет — берём только обычные торги.
   if (noPrepost && Date.now() < noPrepost) {
@@ -64,7 +72,7 @@ async function build(i, env, SYMBOL) {
   if (i === 0) {
     const d = etParts(last).date;
     pts = pts.filter(p => etParts(p[0]).date === d);
-    try { const q = await td('quote?symbol=' + encodeURIComponent(SYMBOL) + '&format=JSON', env); prevClose = parseFloat(q.previous_close) || null; } catch (e) {}
+    try { const q = await td('quote?symbol=' + encodeURIComponent(SYMBOL) + (MIC || '') + '&format=JSON', env); prevClose = parseFloat(q.previous_close) || null; } catch (e) {}
   } else {
     pts = pts.filter(p => p[0] >= last - c.days * 86400);
   }
@@ -80,7 +88,9 @@ async function series(u, env, ctx) {
   const hit = await cache.match(fresh);
   if (hit) return hit;
   try {
-    const data = await build(i, env, T);
+    const ex = await tdExtra(T);
+    const data = await build(i, env, ex.sym, ex.mic);
+    data.symbol = T;
     const body = JSON.stringify(data);
     const mk = age => new Response(body, { headers: Object.assign({ 'cache-control': 'public, max-age=' + age }, JSONH) });
     ctx.waitUntil(Promise.all([cache.put(fresh, mk(ttlFor(CFG[i].ttl))), cache.put(stale, mk(86400))]));
