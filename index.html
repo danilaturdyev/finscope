@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FinScope</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;800&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light dark;
+--up:#0a9a55;--dn:#e5372a;--bg:#eef1f8;--card:rgba(255,255,255,.78);--tx:#0a0c12;--mu:#667085;--bd:rgba(10,12,18,.09);--ac:#0a66ff;--ac2:#9b51ff;--ok:#0a9a55;--bad:#e5372a;--mid:#c98200;--chip:rgba(10,12,18,.06);--glow1:rgba(10,102,255,.18);--glow2:rgba(155,81,255,.16)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--up:#2ee59d;--dn:#ff5a4d;--bg:#05060a;--card:rgba(22,24,32,.72);--tx:#f5f7fb;--mu:#98a2b3;--bd:rgba(255,255,255,.09);--ac:#4d94ff;--ac2:#b78cff;--ok:#3ddc97;--bad:#ff6b5f;--mid:#ffc24d;--chip:rgba(255,255,255,.07);--glow1:rgba(77,148,255,.22);--glow2:rgba(183,140,255,.18)}}
+:root[data-theme="dark"]{--up:#2ee59d;--dn:#ff5a4d;--bg:#05060a;--card:rgba(22,24,32,.72);--tx:#f5f7fb;--mu:#98a2b3;--bd:rgba(255,255,255,.09);--ac:#4d94ff;--ac2:#b78cff;--ok:#3ddc97;--bad:#ff6b5f;--mid:#ffc24d;--chip:rgba(255,255,255,.07);--glow1:rgba(77,148,255,.22);--glow2:rgba(183,140,255,.18)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 -apple-system,"Inter","Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(600px 400px at 85% -5%,var(--glow2),transparent 70%),radial-gradient(700px 500px at -10% 10%,var(--glow1),transparent 70%)}
+main{max-width:820px;margin:0 auto;padding:16px 16px 60px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.logo{font-weight:800;font-size:21px;letter-spacing:-.03em}.logo b{background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.live{font-size:12px;color:var(--mu);display:flex;align-items:center;gap:6px}.live i{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pu 2s infinite}
+@keyframes pu{70%{box-shadow:0 0 0 8px transparent}0%{box-shadow:0 0 0 0 var(--ok)}}
+.tape{overflow:hidden;white-space:nowrap;border:1px solid var(--bd);border-radius:14px;background:var(--card);margin-bottom:12px;font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace}
+.tape div{display:inline-block;padding:11px 0;animation:tp 45s linear infinite}.tape span{margin:0 18px;color:var(--mu)}.tape b{color:var(--tx)}
+@keyframes tp{to{transform:translateX(-50%)}}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+.chip{flex:none;padding:7px 14px;border-radius:99px;background:var(--chip);font-size:14px;font-weight:600;color:var(--mu)}.chip.on{background:var(--tx);color:var(--bg)}
+.card{background:var(--card);border:1px solid var(--bd);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:26px;padding:20px;margin-bottom:12px;animation:up .5s ease both}
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.hero{display:flex;gap:14px;align-items:center}
+.av{width:54px;height:54px;border-radius:18px;background:linear-gradient(135deg,var(--ac),var(--ac2));display:grid;place-items:center;color:#fff;font-weight:800;font-size:23px;flex:none;box-shadow:0 8px 24px var(--glow1)}
+.avl{width:54px;height:54px;border-radius:18px;flex:none;object-fit:cover;box-shadow:0 8px 24px var(--glow1)}
+.hero h1{margin:0;font-size:20px}.tk{color:var(--mu);font-size:13px}
+.price{font-family:"Manrope","Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-size:48px;font-weight:800;letter-spacing:-.03em;margin:14px 0 2px;line-height:1.05}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.pill{padding:5px 11px;border-radius:99px;font-size:12px;font-weight:700;background:var(--chip)}
+.neg{color:var(--bad)}.pos{color:var(--ok)}.mid{color:var(--mid)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+.pr{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-top:14px}.pr .price{margin:0}
+.chg{font-family:"Manrope","Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-size:15px;font-weight:600;margin-top:6px}.up{color:var(--up)}.dn{color:var(--dn)}
+.rg{display:flex;gap:2px;padding:4px;border-radius:99px;background:var(--chip);max-width:100%;overflow-x:auto}.rg button{border:0;font:inherit;font-weight:700;font-size:13px;padding:7px 13px;border-radius:99px;background:transparent;color:var(--mu);cursor:pointer;flex:none}.rg button.on{background:var(--tx);color:var(--bg)}
+.rg button:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+#chart{height:340px;margin-top:10px;touch-action:pan-y;min-width:0}
+#ro{margin-top:8px;padding:12px 14px;border-radius:16px;background:var(--chip);font-size:14px;min-height:88px}
+#ro .t{font-weight:800;font-size:15px}#ro .m{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}#ro small{color:var(--mu);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.sess{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}.sess div{background:var(--chip);border-radius:14px;padding:10px 12px;font-size:13px}.sess small{display:block;color:var(--mu);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+@media (max-width:480px){#chart{height:280px}}
+.vd{background:linear-gradient(135deg,#0a1d4a 0%,#3b1a80 100%);color:#fff;border:0}
+.vd .lbl{font-size:12px;opacity:.7;text-transform:uppercase;letter-spacing:.1em}
+.vd h2{margin:6px 0 10px;font-size:26px;line-height:1.15;letter-spacing:-.02em}.vd p{margin:0 0 12px;opacity:.92;font-size:15px}
+.pl{display:grid;grid-template-columns:130px 1fr 64px;gap:10px;align-items:center;margin:9px 0;font-size:13px}
+.seg{display:flex;gap:4px}.seg i{flex:1;height:8px;border-radius:8px;background:rgba(255,255,255,.18);transition:background .5s,transform .5s;transform:scaleY(.6)}.seg i.on{background:#fff;transform:none}
+.pl em{font-style:normal;text-align:right;opacity:.85}
+.tabs{display:flex;gap:8px;overflow-x:auto;margin:16px 0 12px;padding-bottom:2px}
+.tab{flex:none;border:1px solid var(--bd);font:inherit;font-weight:700;font-size:14px;padding:9px 16px;border-radius:99px;background:var(--card);color:var(--mu);cursor:pointer}
+.tab[aria-selected="true"]{background:linear-gradient(90deg,var(--ac),var(--ac2));color:#fff;border-color:transparent}
+h3{margin:0 0 10px;font-size:18px}p{margin:0 0 10px}.d{color:var(--mu);font-size:14px}
+.it{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--bd)}.it:first-of-type{border-top:0}
+.dot{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:15px;color:#fff}
+.dot.g{background:var(--ok)}.dot.r{background:var(--bad)}.dot.y{background:var(--mid)}
+.it b{display:block;font-size:15px}.it .d{display:block}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.kv div{background:var(--chip);border-radius:18px;padding:12px}.kv small{color:var(--mu);display:block;font-size:12px}.kv strong{font-size:19px}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px;margin-bottom:12px}.g2 .card{margin:0}
+.tt{width:100%;border-collapse:collapse;font-size:14px}.tt td{padding:7px 0;border-top:1px solid var(--bd)}.tt tr:first-child td{border-top:0}.tt td:first-child{color:var(--mu)}.tt td:last-child{text-align:right;font-weight:700}
+.bar{display:flex;height:12px;border-radius:9px;overflow:hidden;margin:6px 0 10px}.bar i{display:block}
+.rb{margin:14px 0}.rb .l{display:flex;justify-content:space-between;font-size:13px;color:var(--mu);margin-bottom:6px}
+.rt{position:relative;height:14px;border-radius:9px;background:var(--chip)}.rt .f{position:absolute;top:0;bottom:0;border-radius:9px;background:linear-gradient(90deg,var(--bad),var(--mid),var(--ok));opacity:.85}.rt .m{position:absolute;top:-4px;bottom:-4px;width:3px;background:var(--tx);border-radius:3px}
+.sc{border-radius:20px;padding:16px;margin:10px 0;background:var(--chip)}.sc h4{margin:0 0 4px;font-size:16px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.sc p{margin:4px 0 0;font-size:14px;color:var(--mu)}
+.inp{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.inp label{display:flex;flex-direction:column;font-size:12px;color:var(--mu);gap:3px;flex:1;min-width:90px}
+input{font:inherit;padding:9px 10px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
+a{color:var(--ac)}.src{font-size:14px;padding:8px 0;border-top:1px solid var(--bd)}.src:first-of-type{border-top:0}
+.note{font-size:12px;color:var(--mu);margin-top:14px}
+@media (max-width:480px){.pl{grid-template-columns:100px 1fr 54px}.price{font-size:42px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.logo{background:none;border:0;padding:0;font-family:"Manrope","Segoe UI",system-ui,sans-serif;color:var(--tx);cursor:pointer}
+.nav{display:flex;gap:4px}.nav button{border:0;background:transparent;color:var(--mu);font:inherit;font-weight:700;font-size:14px;padding:8px 14px;border-radius:99px;cursor:pointer}
+.nav button:hover,.nav button.on{background:var(--chip);color:var(--tx)}
+.nav{align-items:center}.nav .lang{display:inline-flex;align-self:center;vertical-align:middle;width:30px;height:30px;padding:0;margin-right:6px;border-radius:50%;overflow:hidden;justify-content:center;align-items:center;border:2px solid var(--bd);background:var(--card);cursor:pointer;flex:none}.nav .lang:hover{background:var(--card);transform:scale(1.06)}.nav .lang svg{width:100%;height:100%;display:block}.nav .lang:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.logo:focus-visible,.nav button:focus-visible,.ex:focus-visible,.sg button:focus-visible,.cp:focus-visible,.search button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.cover{padding:36px 0 8px;text-align:left}
+.eyebrow{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--ac);background:var(--chip);padding:6px 12px;border-radius:99px}
+.cover h1{font-family:"Manrope","Segoe UI",system-ui,sans-serif;font-weight:800;font-size:clamp(34px,8vw,56px);line-height:1.04;letter-spacing:-.035em;margin:16px 0 12px;text-wrap:balance}
+.lead{font-size:17px;color:var(--mu);max-width:56ch;margin:0 0 22px}
+.search{position:relative;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--bd);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:99px;padding:8px 8px 8px 18px;box-shadow:0 12px 40px var(--glow1)}
+.search:focus-within{border-color:var(--ac)}
+.search svg{flex:none;color:var(--mu)}
+.search input{flex:1;min-width:0;border:0;background:transparent;font-size:17px;padding:10px 4px;outline:none;color:var(--tx);width:auto;border-radius:0}
+.search button{flex:none;border:0;border-radius:99px;padding:12px 22px;font:inherit;font-weight:800;font-size:15px;color:#fff;background:linear-gradient(90deg,var(--ac),var(--ac2));cursor:pointer}
+.sg{margin-top:8px;background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:6px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.sg button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:transparent;color:var(--tx);font:inherit;padding:10px 12px;border-radius:14px;cursor:pointer}
+.sg button:hover{background:var(--chip)}.sg img{width:36px;height:36px;border-radius:12px;flex:none}.sg b{display:block;font-size:15px}.sg span{color:var(--mu);font-size:13px}
+.hint{margin-top:12px;font-size:14px;color:var(--mu);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ex{border:0;background:var(--chip);color:var(--tx);font:inherit;font-weight:700;font-size:13px;padding:6px 12px;border-radius:99px;cursor:pointer}
+.msg{margin-top:12px;padding:12px 14px;border-radius:16px;background:var(--chip);font-size:14px}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:32px}
+.feat .card{margin:0}.feat h3{margin:0 0 6px;font-size:17px}.feat p{margin:0;color:var(--mu);font-size:14px}
+.ico{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;margin-bottom:12px}
+.about h2{font-family:"Manrope","Segoe UI",system-ui,sans-serif;font-size:clamp(28px,6vw,40px);letter-spacing:-.03em;margin:28px 0 12px}
+.ct{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 0;border-top:1px solid var(--bd)}.ct:first-of-type{border-top:0}
+.ct small{display:block;color:var(--mu);font-size:12px;text-transform:uppercase;letter-spacing:.06em}.ct b{font-size:19px;font-variant-numeric:tabular-nums;word-break:break-all}
+.cp,.tg{border:0;border-radius:99px;padding:10px 16px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;background:var(--chip);color:var(--tx);display:inline-block}
+.tg{background:var(--tx);color:var(--bg)}
+.disc{font-size:12px;color:var(--mu);margin-top:28px}
+</style>
+</head>
+<body>
+<main>
+<header class="top"><button class="logo" id="goHome" type="button" aria-label="FinScope, на главную">Fin<b>Scope</b></button><nav class="nav" aria-label="Разделы"><button type="button" class="lang" id="lang"></button><button type="button" data-go="home" class="on">Главная</button><button type="button" data-go="about">О нас</button></nav></header>
+<section id="home">
+ <div class="cover">
+  <span class="eyebrow">Помощник по инвестициям</span>
+  <h1>Акции понятным языком</h1>
+  <p class="lead">FinScope собирает отчёты компаний из SEC, цены, опционы и новости со всего мира. Затем объясняет простыми словами, в чём сила и слабость акции, от чего зависит её рост и какие есть риски.</p>
+  <form class="search" id="sf" role="search" autocomplete="off"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="q" type="search" placeholder="Тикер или название: MARA, Marathon Digital Holdings" aria-label="Поиск акции" autocomplete="off" spellcheck="false"><button type="submit">Найти</button></form>
+  <div class="sg" id="sg" hidden></div>
+  <div class="hint">Попробуй: <button type="button" class="ex" data-q="MARA">MARA</button><button type="button" class="ex" data-q="Marathon Digital Holdings">Marathon Digital Holdings</button></div>
+  <div class="msg" id="sm" role="status" hidden></div>
+ </div>
+ <div class="feat">
+  <div class="card"><div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><h3>Отчёты и цифры</h3><p>Данные из отчётов компании в SEC, дневные цены, итоги по годам, долг и денежные запасы.</p></div>
+  <div class="card"><div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H8l-4 4z"/></svg></div><h3>Опционы и новости</h3><p>Что ставят трейдеры на опционном рынке и какие события в мире давят на акцию или поддерживают её.</p></div>
+  <div class="card"><div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg></div><h3>Вердикт и сценарии</h3><p>Сильные и слабые стороны, три сценария цены и оценка риска. Без команд «покупай» и «продавай».</p></div>
+ </div>
+ <p class="disc">Сейчас в базе одна акция: MARA Holdings (Marathon Digital Holdings). Другие компании добавляются по запросу. FinScope не является инвестиционным советником, решение остаётся за тобой.</p>
+</section>
+<section id="about" class="about" hidden>
+ <h2>О нас</h2>
+ <div class="card">
+  <p>FinScope помогает разобраться в акциях тем, кто только начинает инвестировать. Мы читаем отчёты компаний, смотрим на цены, опционы и новости, а потом объясняем, что из этого следует, понятным языком и с ссылками на источники.</p>
+  <p style="margin:0">Мы не даём индивидуальных инвестиционных советов и не обещаем доходность: любой вердикт на сайте показывает сценарии и риски, а решение принимаешь ты.</p>
+ </div>
+ <div class="card">
+  <h3>Связаться с нами</h3>
+  <div class="ct"><div><small>Телефон</small><b id="ph">+44 7881 197537</b></div><button type="button" class="cp" id="cpb">Скопировать</button></div>
+  <div class="ct"><div><small>Telegram</small><b>@etxxxrnity</b></div><a class="tg" href="https://t.me/etxxxrnity" target="_blank" rel="noopener noreferrer">Открыть в Telegram ↗</a></div>
+  <div class="d" id="cpm" role="status" style="margin-top:6px"></div>
+ </div>
+</section>
+<section id="stock" hidden>
+<div class="live" style="margin-bottom:12px"><i></i>Снимок рынка: 20 окт. 2026</div>
+<div class="chips"><span class="chip on">MARA</span><span class="chip">NVDA · скоро</span><span class="chip">JPM · скоро</span><span class="chip">+ любая акция: напиши в чате</span></div>
+<div class="tape" id="tape"></div>
+
+<div class="card">
+  <div class="hero"><img class="avl" alt="Логотип MARA" src="data:image/png;base64,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"><div><h1>MARA Holdings</h1><div class="tk">NASDAQ: MARA · из майнинга биткоина в энергетику и AI</div></div></div>
+  <div class="pr"><div><div class="price" id="price">$7.48</div><div class="chg" id="chg"></div></div><div class="rg" id="rg" role="group" aria-label="Диапазон графика"></div></div>
+  <div class="row"><span class="pill dn">▼ 24,5% с 8 окт. ($9.91)</span><span class="pill">день: $7.13 – $7.83</span><span class="pill">капитализация $2,89 млрд</span><span class="pill">52 нед.: $6.66 – $21.04</span></div>
+  <div id="chart" role="img" aria-label="График цены MARA"></div><div id="ro"></div>
+  <div class="sess"><div><small>Пре-маркет · 20 окт.</small><b class="mono">нет данных</b></div><div><small>Закрытие · 20 окт.</small><b class="mono">$7.48 (+1,42%)</b></div><div><small>Пост-маркет · 20 окт.</small><b class="mono up">$7.61 (+1,74%)</b></div></div>
+  <p class="d" id="histnote" style="margin:10px 0 0">Дневные цены есть с 3 августа по 20 октября 2026 года, раньше только отдельные точки и итоги лет, и между ними линия прямая. Минутных данных и пре-маркета нет, пост-маркет есть только за 20 октября.</p>
+</div>
+
+<div class="card vd">
+  <div class="lbl">Вердикт FinScope</div>
+  <h2>Дешевле, но не безопаснее: ставка на разворот без подтверждения</h2>
+  <p>За две недели акция упала с $9,91 до $7,48 после понижения рейтинга банками JPMorgan и Morgan Stanley, слабого биткоина и дорогих денег. Опционный рынок настроен умеренно бычье (колл-опционов больше), но ждёт огромных колебаний. Рост до целей аналитиков возможен, только если компания подпишет договоры аренды под AI и закроет сделку Long Ridge. Подтверждений пока нет.</p>
+  <div id="pl"></div>
+  <p style="font-size:12px;opacity:.7;margin:10px 0 0">Оценки по пятибалльной шкале выставлены по фактам из вкладок ниже. Это не прогноз и не инвестиционная рекомендация.</p>
+</div>
+
+<div class="tabs" role="tablist" id="tabs"></div>
+<div id="panel"></div>
+<p class="note">Данные: отчёты компании в SEC (8-K, 10-Q), биржевые и опционные сайты, новости за июль – октябрь 2026. Дневные цены 3 авг – 20 окт 2026 взяты из таблиц котировок, более ранние точки отрывочные, минутной ленты нет. Источники иногда расходятся, поэтому проверяй ключевые цифры сам. FinScope не является инвестиционным советником.</p>
+</section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<script>
+/* ===== Язык: RU / EN (кнопка-флаг в шапке) ===== */
+let LANG=(()=>{try{return localStorage.getItem('fs_lang')==='en'?'en':'ru'}catch(e){return 'ru'}})();
+let LOC=LANG==='en'?'en-GB':'ru-RU';
+const PIL=[['Фундамент',2,'слабый'],['Новости и макро',2,'негатив'],['Опционы',3,'умеренно +'],['Потенциал роста',3,'средний'],['Риск потерь',5,'максимум']];
+const D={
+ strong:[
+  ['Энергия и земля под AI','Мощности около 1,9 ГВт, с Long Ridge и участком в Техасе до 4,8 ГВт. Свободных дата-центров в США почти нет (простой около 1%), а у майнеров уже есть энергия.'],
+  ['Майнинг растёт в объёмах','Хешрейт +22% до 70,3 EH/s, добыто 2 422 BTC (+3%).'],
+  ['Долг сократили без выпуска акций','В 1-м полугодии продали 23 093 BTC примерно за $1,6 млрд и выкупили около $1 млрд конвертируемых облигаций с дисконтом.'],
+  ['Long Ridge даёт стабильный поток','Газовая станция в Огайо 505 МВт, более 70% выработки продано по долгосрочным контрактам. Сделка $1,5 млрд вместе с долгом.'],
+  ['Капитализация сопоставима с активами','Капитализация $2,89 млрд, а на 30 июня было $2,5 млрд в наличных и биткоине. Правда, долг около $2,4 млрд.'],
+  ['Аналитики в среднем всё ещё за','8 рекомендаций «покупать», 1 «держать», 3 «продавать», средняя цель около $17,6. BlackRock и Dimensional увеличили доли во II квартале.']],
+ weak:[
+  ['Крупные убытки','Выручка II квартала $174,9 млн (−27%), чистый убыток $611,3 млн против прибыли $808 млн годом ранее. $343 млн убытка бумажные (переоценка биткоина), но это пятый убыточный квартал подряд.'],
+  ['Майнинг дорожает','Энергия на один добытый биткоин обошлась в $38 690 против $33 735 год назад. При биткоине около $80 тыс. маржа тонкая.'],
+  ['Долг под залог биткоина','Кредиты на $600 млн обеспечены 18 750 BTC (около 54% запаса), ставка около 7,56%, часть плавающая (ставка ФРС + 3,875 п.п.). Падение биткоина потребует больше залога.'],
+  ['Банки понизили рейтинг','JPMorgan перевёл акцию в Underweight (цель $11 вместо $13), Morgan Stanley держит Underweight с целью $10.'],
+  ['AI-договоров ещё нет','CEO обещает два договора аренды до конца года, но в начале октября не было ни одного. Конкуренты уже подписали сделки.'],
+  ['Слабая ликвидность','По оценкам агрегаторов, текущая ликвидность ниже 1, долг к капиталу около 1,5. Рынок боится новых продаж биткоина.'],
+  ['Сделка зависит от регулятора','Long Ridge ждёт одобрения FERC, срок закрытия 30 ноября 2026.']],
+ news:[
+  ['r','Окт.','JPMorgan: двойное понижение до Underweight, цель $11','Банк считает, что «лёгкая» AI-стратегия MARA создаёт меньше стоимости, чем у конкурентов с собственной энергетикой.','https://stockstotrade.com/news/mara-holdings-inc-mara-news-2026_10_14/'],
+  ['r','9 окт.','Morgan Stanley снизил цель до $10, рейтинг Underweight','Причина: удешевление площадок в более жёсткой кредитной среде для AI-проектов.','https://www.marketbeat.com/instant-alerts/price-mara-nasdaq-mara-shares-down-97-heres-what-happened-2026-10-14/'],
+  ['r','14 окт.','Акция −9,7% до $8,23: биткоин около $81,8 тыс. и страх новых продаж BTC','С 6 по 13 октября акция потеряла 17%, а S&P 500 почти не изменился: давление отраслевое.','https://www.marketbeat.com/instant-alerts/price-mara-nasdaq-mara-shares-down-97-heres-what-happened-2026-10-14/'],
+  ['r','14 окт.','Инфляция в США за сентябрь 3,7%, шансы повышения ставки ФРС в октябре выше 50%','Майнеры, торгующиеся как AI-инфраструктура, падали вместе с CoreWeave и Oracle.','https://www.altcoinbuzz.io/bitcoin-miners-drop-12-as-ai-data-center-debt-reprices'],
+  ['r','Окт.','Доходность 10-летних гособлигаций США около 5,3%, 30-летних выше 5,7%','Дорогие деньги бьют по компаниям, строящим дата-центры в долг. ФРС называет среди причин и огромные займы на AI.','https://cryptoslate.com/ai-may-be-keeping-bitcoins-biggest-macro-headwind-alive-after-the-fed-stops-hiking/'],
+  ['y','2026','Группа «майнер → AI» обгоняет биткоин: корзина +56% против −17% у BTC','Рынок платит за энергию и дата-центры, но MARA пока не показала собственных AI-договоров.','https://beincrypto.com/bitcoin-miner-stocks-ai-infrastructure-boom/'],
+  ['g','Авг.','Кредиты на $600 млн (Coinbase, Two Prime) без выпуска акций','Деньги идут на Long Ridge. Риск размытия долей снижается, долг растёт.','https://theenergymag.com/news/2026-08-07/mara-bitcoin-pledge-coinbase-two-prime'],
+  ['g','9 июля','Участок в Техасе: до 1 ГВт к октябрю 2027 и до 2 ГВт к апрелю 2028','Долгосрочный драйвер, но зависит от поиска арендатора.','https://www.tikr.com/zh/blog/mara-holdings-nasdaq-stock-surges-15-after-strategic-texas-land-acquisition-doubles-power-capacity'],
+  ['g','Авг.','Дефицит дата-центров: простой около 1%','Выигрывают компании, у которых уже есть подключённая энергия, включая майнеров.','https://www.advisorperspectives.com/coinshares-channel/red-tape-repricing-miners-fed-challenged']],
+ src:[
+  ['Письмо акционерам за II квартал 2026 (8-K, SEC)','https://www.sec.gov/Archives/edgar/data/0001507605/000150760526000020/q226shareholderletter.htm'],
+  ['Отчёт 10-Q за I квартал 2026 (SEC)','https://www.sec.gov/Archives/edgar/data/0001507605/000150760526000016/mara-20260331.htm'],
+  ['Все документы MARA на SEC EDGAR','https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=MARA&type=&dateb=&owner=include&count=40'],
+  ['Дневные цены 11 авг. – 20 окт. и пост-маркет (StockAnalysis)','https://stockanalysis.com/stocks/mara/history/'],
+  ['Дневные цены 3 авг. – 1 сен. (Investing.com)','https://ca.investing.com/equities/marathon-pa-historical-data'],
+  ['Дневные цены 14 сен. – 16 окт., проверка (StockInvest)','https://stockinvest.us/stock-price/MARA'],
+  ['Итоги по годам 2013–2024, рекорды (Macrotrends)','https://www.macrotrends.net/stocks/charts/MARA/marathon-digital-holdings/stock-price-history'],
+  ['Изменение цены по годам (CompaniesMarketCap)','https://companiesmarketcap.com/marathon-digital-holdings/stock-price-history/'],
+  ['Цены 8 окт. 2021, 2023, 2025 и 2012 (Motley Fool)','https://www.fool.com/quote/nasdaq/mara/'],
+  ['Опционы: IV по срокам (Market Chameleon)','https://marketchameleon.com/Overview/MARA/OptionChain/'],
+  ['Опционы: IV, put/call, open interest (Barchart)','https://www.barchart.com/stocks/quotes/MARA/put-call-ratios'],
+  ['Опционы: цепочка на 18 дек. (Macroaxis)','https://www.macroaxis.com/stock-options/MARA/Marathon-Digital-Holdings'],
+  ['Падение 14 октября и цели банков (MarketBeat)','https://www.marketbeat.com/instant-alerts/price-mara-nasdaq-mara-shares-down-97-heres-what-happened-2026-10-14/'],
+  ['Понижение JPMorgan, цели аналитиков (StocksToTrade)','https://stockstotrade.com/news/mara-holdings-inc-mara-news-2026_10_14/'],
+  ['Итоги II квартала (Blockspace)','https://blockspace.media/insight/mara-holdings-revenue-falls-power-capacity-2026/'],
+  ['Продажи биткоина и выкуп облигаций (Blockspace)','https://blockspace.media/insight/mara-sells-bitcoin-debt-infrastructure/'],
+  ['Кредиты под залог BTC (The Energy Mag)','https://theenergymag.com/news/2026-08-07/mara-bitcoin-pledge-coinbase-two-prime'],
+  ['Макро: инфляция и ставка ФРС (Altcoin Buzz)','https://www.altcoinbuzz.io/bitcoin-miners-drop-12-as-ai-data-center-debt-reprices']]
+};
+const TABS=[['ver','Итог'],['term','Терминал'],['opt','Опционы'],['sw','Сильные и слабые'],['news','Новости мира'],['sc','Сценарии'],['src','Источники']];
+const $=id=>document.getElementById(id);
+const sy=c=>c==='g'?'+':c==='r'?'−':'±';
+const U=s=>Date.parse(s+'T00:00:00Z');
+const NF=n=>n==null?'—':'$'+n.toFixed(2);
+const fd=(t,o)=>new Date(t).toLocaleDateString(LOC,Object.assign({day:'numeric',month:'long',year:'numeric',timeZone:'UTC'},o||{}));
+const item=(c,t,d)=>`<div class="it"><div class="dot ${c}">${sy(c)}</div><div><b>${t}</b><span class="d">${d}</span></div></div>`;
+const tt=r=>`<table class="tt mono">${r.map(x=>`<tr><td>${x[0]}</td><td class="${x[2]||''}">${x[1]}</td></tr>`).join('')}</table>`;
+const rb=(t,lo,hi,sub)=>{const A=3,B=14,pos=v=>Math.max(0,Math.min(100,(v-A)/(B-A)*100));return `<div class="rb"><div class="l"><b style="color:var(--tx)">${t}</b><span>$${lo} – $${hi}</span></div><div class="rt"><div class="f" style="left:${pos(lo)}%;width:${pos(hi)-pos(lo)}%"></div><div class="m" style="left:${pos(7.48)}%"></div></div><div class="d" style="margin-top:6px">${sub}</div></div>`};
+
+function view(k){
+ if(k==='ver')return `<div class="card"><h3>Ключевые цифры</h3><div class="kv">
+  <div><small>Выручка II кв.</small><strong>$174,9 млн</strong></div><div><small>Чистый убыток II кв.</small><strong class="neg">−$611 млн</strong></div>
+  <div><small>Биткоин (30 июня)</small><strong>35 577 BTC</strong></div><div><small>Долг</small><strong>≈ $2,4 млрд</strong></div>
+  <div><small>Наличные</small><strong>$421 млн</strong></div><div><small>Цель аналитиков (средняя)</small><strong>≈ $17,6</strong></div></div></div>
+  <div class="card"><h3>Почему акция может принести прибыль</h3><p>Рынок оценивает бывших майнеров как владельцев энергии и дата-центров. Акция упала сильно, и если появятся договоры аренды под AI, а Long Ridge будет закрыта, возможен резкий отскок к целям аналитиков. Для этого должны сложиться три вещи.</p>
+  ${item('g','Договоры аренды','Первый из двух обещанных AI-договоров до конца 2026 года.')}${item('g','Сделка Long Ridge','Одобрение FERC и закрытие до 30 ноября 2026.')}${item('y','Деньги и биткоин','Устойчивый биткоин и снижение доходностей облигаций.')}</div>
+  <div class="card"><h3>Что может сломать идею</h3>${item('r','Ставка ФРС и инфляция','Повышение ставки удорожает кредиты и давит на всю группу.')}${item('r','Падение биткоина','Часть долга обеспечена биткоином, при падении нужен дополнительный залог.')}${item('r','Нет AI-договоров к декабрю','Главное обоснование роста исчезает, а убытки остаются.')}${item('r','Понижения рейтингов','Если к JPMorgan и Morgan Stanley присоединятся другие банки, давление усилится.')}</div>`;
+ if(k==='term')return `<div class="g2">
+  <div class="card"><h3>Котировка · 20 окт.</h3>${tt([['Закрытие','$7.48'],['Пост-маркет','$7.61 (+1,74%)','up'],['Открытие','$7.19'],['Максимум дня','$7.83','up'],['Минимум дня','$7.13','dn'],['Объём','36,6 млн'],['Средний объём','36,4 млн'],['Капитализация','$2,89 млрд'],['P/E','−0,82'],['Бета (1 окт.)','5,33'],['52 недели','$6.66 – $21.04']])}</div>
+  <div class="card"><h3>Аналитики</h3><div class="bar"><i style="flex:8;background:var(--ok)"></i><i style="flex:1;background:var(--mid)"></i><i style="flex:3;background:var(--bad)"></i></div><p class="d">8 покупать · 1 держать · 3 продавать</p>${tt([['JPMorgan','Underweight · $11','neg'],['Morgan Stanley','Underweight · $10','neg'],['H.C. Wainwright','Buy · $20 (11 сен.)','pos'],['Средняя цель','≈ $17,6–18,4']])}</div>
+  <div class="card"><h3>Баланс · 30 июня</h3>${tt([['Наличные','$421,3 млн'],['Биткоин','35 577 BTC'],['Стоимость биткоина','≈ $2,1 млрд'],['Общий долг','≈ $2,4 млрд','neg'],['Конвертируемые облигации','≈ $2,3 млрд'],['BTC в залоге','≈ 54%','neg'],['BTC выдано в займы','4 742'],['Ставка новых кредитов','7,56%'],['Покупка Long Ridge','$1,5 млрд']])}</div>
+  <div class="card"><h3>Операции</h3>${tt([['Выручка II кв.','$174,9 млн (−27%)','neg'],['Выручка 1-е полугодие','$349 млн (−22,7%)','neg'],['Чистый убыток II кв.','−$611,3 млн','neg'],['Чистый убыток I кв.','−$1,26 млрд','neg'],['Хешрейт','70,3 EH/s (+22%)','pos'],['Добыто BTC (II кв.)','2 422 (+3%)'],['Энергия на 1 BTC','$38 690','neg'],['Мощности','1,9 → 4,8 ГВт']])}</div>
+  <div class="card"><h3>Макро</h3>${tt([['Биткоин','≈ $82 тыс.'],['Доходность 10 лет США','5,28%'],['Доходность 30 лет США','5,71%'],['Инфляция США (сент.)','3,7%','neg'],['Шанс повышения ставки (окт.)','53,7%','neg'],['Заседание ФРС','27–28 окт.*']])}<p class="d" style="margin:8px 0 0">* даты не подтверждены. Данные на 14 октября и позже.</p></div>
+  <div class="card"><h3>Отрасль · падение 8 и 14 окт.</h3>${tt([['Hut 8 (8 окт.)','−10,7%','neg'],['Riot (8 окт.)','−8,8%','neg'],['CoreWeave (14 окт.)','−16%','neg'],['Nebius (14 окт.)','−11%','neg'],['Oracle (14 окт.)','−9%','neg'],['Индекс AI-дата-центров','−7,5% (21 из 23 вниз)','neg']])}</div>
+  <div class="card"><h3>Календарь событий</h3>${tt([['23 окт.','Экспирация опционов'],['27–28 окт.','ФРС*'],['Начало ноября','Отчёт III кв.*'],['30 нояб.','Срок закрытия Long Ridge'],['18 дек.','Экспирация опционов'],['31 дек.','Срок двух AI-договоров']])}<p class="d" style="margin:8px 0 0">* дата не подтверждена.</p></div></div>`;
+ if(k==='opt')return `<div class="card"><h3>Что говорят опционы</h3><p class="d">Опционы показывают, как рынок оценивает будущие колебания и во что ставят трейдеры. Это настроение, а не прогноз.</p><div class="kv">
+  <div><small>Подразумеваемая волатильность (IV)</small><strong>82–90%</strong></div><div><small>Percentile IV</small><strong>57%</strong></div>
+  <div><small>Put/Call по объёму</small><strong class="pos">0,38</strong></div><div><small>Put/Call по открытым позициям</small><strong class="pos">0,78</strong></div>
+  <div><small>Открытых колл-опционов</small><strong>1 144 566</strong></div><div><small>Открытых пут-опционов</small><strong>893 086</strong></div></div></div>
+  <div class="card"><h3>Ожидаемый диапазон цены</h3><p class="d">Расчёт по IV: один стандартный разброс от цены $7.48. По оценке рынка опционов, цена окажется внутри диапазона примерно в двух случаях из трёх. Чёрная черта — цена сейчас.</p>
+  ${rb('До 20 ноября (IV ≈ 89%)','5.54','9.42','Возможное движение примерно ±26% за месяц.')}${rb('До 18 декабря (IV ≈ 87%)','4.86','10.10','Возможное движение примерно ±35% за два месяца.')}</div>
+  <div class="card"><h3>Как это читать</h3>
+  ${item('g','Колл-опционов больше, чем пут','Put/Call ниже 1 означает, что трейдеры чаще ставят на рост, чем покупают защиту. Это умеренно бычий сигнал.')}
+  ${item('y','Но это может быть «ловля дна»','После падения на 22% многие покупают колл-опционы дёшево. Такая позиция не гарантирует разворот.')}
+  ${item('r','Волатильность экстремальная','IV около 87% означает, что рынок ждёт очень больших движений в обе стороны, и опционы стоят дорого. Новичкам покупка опционов чаще приводит к потере всей суммы.')}
+  ${item('y','Цепочка на 18 декабря (сентябрь)','Максимум открытых пут-позиций был на страйке $7, колл-позиций на $25. Данные устарели: цена тогда была намного выше.')}
+  <p class="d" style="margin-top:8px">В вердикт опционы входят как сигнал настроения: 3 из 5 (умеренно бычье настроение, но очень дорогие и рискованные ставки). Данные собраны 19–21 октября из нескольких публичных источников, у части время обновления не указано.</p></div>`;
+ if(k==='sw')return `<div class="card"><h3>Сильные стороны</h3>${D.strong.map(x=>item('g',x[0],x[1])).join('')}</div><div class="card"><h3>Слабые стороны</h3>${D.weak.map(x=>item('r',x[0],x[1])).join('')}</div>`;
+ if(k==='news')return `<div class="card"><h3>Новости, которые влияют на MARA</h3><p class="d">Плюс — поддерживает акцию, минус — давит, ± — неоднозначно.</p>${D.news.map(n=>`<div class="it"><div class="dot ${n[0]}">${sy(n[0])}</div><div><b>${n[2]}</b><span class="d">${n[3]}</span><a href="${n[4]}" target="_blank" rel="noopener noreferrer" style="font-size:13px">${n[1]} · источник</a></div></div>`).join('')}</div>`;
+ if(k==='sc')return `<div class="card"><h3>Сценарии цены</h3><p class="d">Цели привязаны к ориентирам: нижняя граница диапазона по опционам до 18 декабря, цель Morgan Stanley и средняя цель аналитиков. Это допущения, а не прогноз. Меняй числа под себя.</p>
+  <div class="inp"><label>Цена сейчас, $<input id="p0" type="number" step="0.01" value="7.48"></label><label>Сумма, $<input id="amt" type="number" value="500"></label></div>
+  <div class="inp"><label>Bear, $<input id="pb" type="number" step="0.01" value="5"></label><label>Base, $<input id="pm" type="number" step="0.01" value="10"></label><label>Bull, $<input id="pu" type="number" step="0.01" value="17.58"></label></div><div id="scs"></div></div>`;
+ return `<div class="card"><h3>Источники данных</h3>${D.src.map(s=>`<div class="src"><a href="${s[1]}" target="_blank" rel="noopener noreferrer">${s[0]}</a></div>`).join('')}</div>`;
+}
+function calc(){
+ const g=id=>parseFloat($(id).value)||0,p0=g('p0'),amt=g('amt');
+ const S=[['Bear','pb','neg','AI-договоров нет, ставка ФРС растёт, биткоин слабеет: акция уходит ниже минимума февраля ($6.66).'],['Base','pm','mid','Часть планов выполняется, но без прорыва: акция возвращается к целям осторожных банков ($10–11).'],['Bull','pu','pos','Подписан AI-договор, Long Ridge закрыта, доходности снижаются: акция идёт к средней цели аналитиков.']];
+ $('scs').innerHTML=S.map(([n,id,c,t])=>{const r=p0?g(id)/p0-1:0;return `<div class="sc"><h4><span>${n} · $${g(id).toFixed(2)}</span><span class="${c}">${r>=0?'+':''}${(r*100).toFixed(0)}% · $${(amt*(1+r)).toFixed(0)}</span></h4><p>${t}</p></div>`}).join('');
+}
+function show(k){
+ document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.k===k));
+ $('panel').innerHTML=view(k);
+ if(k==='sc'){document.querySelectorAll('#panel input').forEach(i=>i.addEventListener('input',calc));calc()}
+}
+// Дневные данные 3 авг – 20 окт 2026 (stockanalysis.com, investing.com): открытие, максимум, минимум, закрытие, объём (млн).
+// Раньше: отдельные точки и итоги лет (Macrotrends, Motley Fool, companiesmarketcap).
+const DAILY=[['2026-08-03',11.18,11.89,10.96,11.75,27.2],['2026-08-04',11.58,11.91,11.29,11.75,30.2],['2026-08-05',11.66,12.02,11.23,11.24,27.3],['2026-08-06',10.93,11.21,10.65,10.65,36.6],['2026-08-07',10.91,10.94,9.69,10.09,56.6],['2026-08-10',9.99,10.08,9.4,9.56,42.3],['2026-08-11',10.1,10.15,9.6,9.68,37.3],['2026-08-12',10.13,10.28,9.55,9.64,40.7],['2026-08-13',9.49,9.79,9.17,9.21,32.8],['2026-08-14',9.01,9.26,9.0,9.2,34.6],['2026-08-17',9.22,9.81,9.2,9.72,55.3],['2026-08-18',9.36,9.55,8.91,8.96,45.5],['2026-08-19',8.91,9.89,8.68,9.65,67.2],['2026-08-20',10.21,11.19,9.96,11.15,80.3],['2026-08-21',11.7,12.47,11.02,11.26,104.1],['2026-08-24',11.17,12.06,11.03,11.18,61.5],['2026-08-25',11.07,12.15,10.93,11.83,48.5],['2026-08-26',11.56,11.73,10.99,11.22,42.0],['2026-08-27',11.53,12.32,11.28,11.87,60.0],['2026-08-28',11.53,11.6,10.56,10.67,41.9],['2026-08-31',10.78,10.79,10.36,10.77,23.7],['2026-09-01',10.48,10.61,10.15,10.23,30.2],['2026-09-02',10.01,10.53,9.99,10.47,30.0],['2026-09-03',10.6,11.85,10.48,11.6,69.1],['2026-09-04',11.19,11.5,11.19,11.31,37.6],['2026-09-08',11.13,12.06,11.0,11.83,53.5],['2026-09-09',12.09,12.15,11.6,11.92,38.4],['2026-09-10',11.64,11.8,11.22,11.43,38.5],['2026-09-11',11.62,12.39,11.54,11.98,45.3],['2026-09-14',11.1,11.94,10.96,11.5,53.3],['2026-09-15',11.27,11.48,10.96,11.24,49.1],['2026-09-16',11.31,11.53,10.77,11.04,46.3],['2026-09-17',11.46,11.88,10.86,11.64,70.5],['2026-09-18',12.12,13.32,12.05,13.24,84.3],['2026-09-21',13.94,13.98,13.16,13.28,52.0],['2026-09-22',13.13,13.97,12.97,13.63,43.6],['2026-09-23',13.45,13.65,13.27,13.35,37.4],['2026-09-24',13.07,13.64,12.84,12.92,40.2],['2026-09-25',12.99,12.99,12.12,12.55,36.8],['2026-09-28',12.47,12.74,12.09,12.11,28.6],['2026-09-29',12.41,12.41,11.94,11.99,26.1],['2026-09-30',12.31,12.35,11.3,11.33,41.2],['2026-10-01',11.28,11.39,10.91,11.21,30.3],['2026-10-02',11.64,12.24,11.05,11.23,42.3],['2026-10-05',11.39,11.41,10.81,11.17,33.5],['2026-10-06',11.18,11.34,10.93,10.97,28.4],['2026-10-07',10.63,10.83,10.16,10.36,36.6],['2026-10-08',10.15,10.24,9.64,9.91,47.5],['2026-10-09',10.06,10.09,9.49,9.65,34.8],['2026-10-12',9.52,9.74,9.39,9.44,20.6],['2026-10-13',9.24,9.27,8.98,9.11,36.0],['2026-10-14',8.81,8.9,8.17,8.23,38.4],['2026-10-15',8.01,8.36,7.64,8.33,41.3],['2026-10-16',8.1,8.23,7.42,7.53,40.4],['2026-10-19',7.91,7.91,7.31,7.38,29.0],['2026-10-20',7.19,7.83,7.13,7.48,36.6]];
+const SPARSE=[['2012-02-09',105.04],['2012-12-31',98.80],['2013-12-31',50.40],['2014-12-23',154.72],['2014-12-31',134.72],['2015-12-31',25.60],['2016-12-30',27.52],['2017-12-29',16.40],['2018-12-31',1.44],['2019-12-31',0.88],['2020-03-18',0.40],['2020-12-31',10.44],['2021-10-08',39.49],['2021-12-31',32.86],['2022-12-30',3.42],['2023-10-09',8.36],['2023-12-29',23.49],['2024-12-31',16.77],['2025-10-08',20.20],['2025-12-31',8.98],['2026-07-10',12.60],['2026-07-31',11.32]];
+const PTS=SPARSE.concat(DAILY.map(r=>[r[0],r[4]])).sort((a,b)=>a[0]<b[0]?-1:1);
+const DET={};DAILY.forEach(r=>{DET[r[0]]=[r[1],r[2],r[3],r[4],r[5]]});
+const NOTE={'2012-02-09':'начало истории по данным Motley Fool','2012-12-31':'закрытие года (расчётное по данным годовых изменений)','2014-12-23':'исторический максимум закрытия','2020-03-18':'исторический минимум закрытия','2026-10-20':'пост-маркет: $7.61 (+1,74%) в 17:58 по Нью-Йорку, пре-маркет: нет данных'};
+const YE=['2013-12-31','2014-12-31','2015-12-31','2016-12-30','2017-12-29','2018-12-31','2019-12-31','2020-12-31','2021-12-31','2022-12-30','2023-12-29','2024-12-31','2025-12-31'];
+YE.forEach(d=>{NOTE[d]=NOTE[d]||'закрытие года'});
+const RANGES=[['1Д',1],['1Н',7],['1М',30],['6М',182],['1Г',365],['5Л',1826],['Всё',0]];
+const DAY=864e5,END=Date.parse('2026-10-20T00:00:00Z');
+let RNG=0,CH=null;
+const LIVE={ser:{},prev:null,hover:false,ok:false,t:0};
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const pct=v=>(v>=0?'+':'−')+Math.abs(v).toFixed(2).replace('.',LANG==='en'?'.':',')+'%';
+const fshort=t=>new Date(t).toLocaleDateString(LOC,{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+function baseIdx(days){
+ if(!days)return 0;
+ const tgt=END-days*DAY;let bi=0,bd=Infinity;
+ PTS.forEach((p,i)=>{const d=Math.abs(Date.parse(p[0]+'T00:00:00Z')-tgt);if(d<bd){bd=d;bi=i}});
+ return Math.min(bi,PTS.length-2);
+}
+function chart(){
+ const rg=$('rg');
+ rg.innerHTML=RANGES.map(([n],i)=>`<button type="button" data-i="${i}" class="${i===RNG?'on':''}">${n}</button>`).join('');
+ rg.onclick=e=>{const b=e.target.closest('button');if(b){RNG=+b.dataset.i;chart()}};
+ const L=RNG<=2?LIVE.ser[RNG]:null,intr=!!(L&&L.length>1),pts=intr?L:PTS.slice(baseIdx(RANGES[RNG][1])),b0=(intr&&RNG===0&&LIVE.prev)?LIVE.prev:pts[0][1],last=pts[pts.length-1][1],ch=(last/b0-1)*100,up=ch>=0,col=cssv(up?'--up':'--dn');
+ const head=i=>{const v=pts[i][1],dl=v-b0,r=(v/b0-1)*100,u=dl>=0,c=$('chg');c.className='chg '+(u?'up':'dn');c.textContent=(u?'▲ ':'▼ ')+pct(r)+' ('+(u?'+':'−')+'$'+Math.abs(dl).toFixed(2)+') '+fromLbl(pts[0][0],intr&&RNG===0&&LIVE.prev);$('price').textContent='$'+v.toFixed(2)};
+ head(pts.length-1);
+ if(CH){CH.remove();CH=null}
+ if(!window.LightweightCharts){$('chart').textContent='Не удалось загрузить библиотеку графика.';return}
+ const mu=cssv('--mu'),bd=cssv('--bd'),tx=cssv('--tx');
+ CH=LightweightCharts.createChart($('chart'),{autoSize:true,handleScroll:false,handleScale:false,
+  layout:{background:{type:'solid',color:'transparent'},textColor:mu,fontFamily:'ui-monospace,Menlo,Consolas,monospace',fontSize:11},
+  grid:{vertLines:{visible:false},horzLines:{color:bd}},
+  rightPriceScale:{borderVisible:false,scaleMargins:{top:.12,bottom:.1}},
+  timeScale:Object.assign({borderVisible:false,rightOffset:2},intr?{timeVisible:true,secondsVisible:false,tickMarkFormatter:tickLbl}:{}),
+  crosshair:{mode:0,vertLine:{color:mu,labelBackgroundColor:tx},horzLine:{color:mu,labelBackgroundColor:tx}},
+  localization:Object.assign({locale:LOC,priceFormatter:p=>'$'+p.toFixed(2)},intr?{timeFormatter:t=>whenLbl(t)}:{})});
+ const ser=CH.addLineSeries({color:col,lineWidth:2,crosshairMarkerRadius:4,priceLineVisible:false,lastValueVisible:true});
+ ser.setData(pts.map(p=>({time:p[0],value:p[1]})));
+ CH.timeScale().fitContent();
+ const show=i=>{
+  head(i);
+  const x=pts[i],d=intr?null:DET[x[0]],r=(x[1]/b0-1)*100,cl=r>=0?'up':'dn',f=n=>n==null?'—':'$'+n.toFixed(2);
+  $('ro').innerHTML=`<div class="t">${whenLbl(x[0])}${NOTE[x[0]]?` <span class="d">· ${NOTE[x[0]]}</span>`:''}</div><div class="m mono"><div><small>Цена</small><b>${f(x[1])}</b></div><div><small>С начала периода</small><b class="${cl}">${pct(r)}</b></div>${d?`<div><small>Открытие</small>${f(d[0])}</div><div><small>Максимум</small>${f(d[1])}</div><div><small>Минимум</small>${f(d[2])}</div><div><small>Объём</small>${d[4]?d[4].toFixed(1)+' млн':'—'}</div>`:''}</div><div class="d" style="margin-top:8px">${intr?'Живые данные Twelve Data (с задержкой, если у источника так задано). Время — ваше местное.':(d?'Минутных данных нет, есть только сводка дня.':'По этому дню известна только цена закрытия.')}</div>`;
+ };
+ show(pts.length-1);
+ CH.subscribeCrosshairMove(p=>{
+  const v=p.seriesData&&p.seriesData.get(ser);
+  if(!p.time||!v){LIVE.hover=false;show(pts.length-1);return}
+  LIVE.hover=true;
+  const i=intr?pts.findIndex(x=>x[0]===p.time):pts.findIndex(x=>Math.abs(x[1]-v.value)<1e-9);
+  show(i<0?pts.length-1:i);
+ });
+}
+function pillars(){
+ $('pl').innerHTML=PIL.map(p=>`<div class="pl"><span>${p[0]}</span><div class="seg">${[1,2,3,4,5].map(i=>`<i data-on="${i<=p[1]?1:0}"></i>`).join('')}</div><em>${p[2]}</em></div>`).join('');
+ requestAnimationFrame(()=>setTimeout(()=>document.querySelectorAll(".seg i[data-on='1']").forEach((e,i)=>setTimeout(()=>e.classList.add('on'),i*40)),150));
+}
+function countUp(){
+ const el=$('price'),t=7.48,t0=performance.now();
+ if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+ (function f(now){if(LIVE.ok)return;const k=Math.min(1,(now-t0)/900),e=1-Math.pow(1-k,3);el.textContent='$'+(t*e).toFixed(2);if(k<1)requestAnimationFrame(f)})(t0);
+}
+function tape(){
+ const it=[['MARA','$7.48','−24,5% с 8 окт.','neg'],['BTC','≈$82 тыс.','','' ],['US 10Y','5,28%','',''],['US 30Y','5,71%','',''],['CPI США (сент.)','3,7%','','neg'],['Шанс повышения ставки ФРС','53,7%','14 окт.','neg'],['MARA IV','≈87%','','']];
+ const h=it.map(i=>`<span>${i[0]} <b class="${i[3]}">${i[1]}</b> ${i[2]}</span>`).join('');
+ $('tape').innerHTML=`<div>${h}${h}</div>`;
+}
+$('tabs').innerHTML=TABS.map(([k,n])=>`<button class="tab" role="tab" data-k="${k}">${n}</button>`).join('');
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(b)show(b.dataset.k)});
+const STOCKS=[{t:'MARA',name:'MARA Holdings',sub:'бывш. Marathon Digital Holdings · NASDAQ',alt:['marathon digital holdings','marathon digital','marathon patent group','mara holdings','mara holdings inc','marathon']}];
+const norm=x=>x.toLowerCase().replace(/[.,]/g,' ').replace(/\s+/g,' ').trim();
+function lev(a,b){const m=a.length,n=b.length,d=Array.from({length:m+1},(_,i)=>[i].concat(Array(n).fill(0)));for(let j=1;j<=n;j++)d[0][j]=j;for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[m][n]}
+function findStocks(q){q=norm(q);if(q.length<2)return[];return STOCKS.filter(s=>[s.t,s.name,...s.alt].map(norm).some(n=>n.includes(q)||(q.length>=5&&lev(q,n)<=(q.length>=12?2:1))||(q.length>=8&&n.length>=8&&lev(q.slice(0,n.length),n)<=2)))}
+const LOGO=document.querySelector('.avl')?document.querySelector('.avl').src:'';
+
+/* ===== Живой слой: данные приходят с сервера /api/series (Twelve Data). Если сервера нет — остаются дневные данные. ===== */
+function etMin(s){const p=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'numeric',hour12:false}).formatToParts(new Date(s*1000));let h=0,m=0;p.forEach(x=>{if(x.type==='hour')h=+x.value%24;if(x.type==='minute')m=+x.value});return h*60+m}
+function whenLbl(t){
+ if(typeof t!=='number')return fd(Date.parse(t+'T00:00:00Z'),{month:'long'});
+ const d=new Date(t*1000),m=etMin(t);
+ return d.toLocaleDateString(LOC,{day:'numeric',month:'short'})+', '+d.toLocaleTimeString(LOC,{hour:'2-digit',minute:'2-digit'})+(m<570?' · пре-маркет':m>=960?' · пост-маркет':'');
+}
+function fromLbl(t,prev){
+ if(typeof t!=='number')return (LANG==='en'?'since ':'с ')+fshort(Date.parse(t+'T00:00:00Z'));
+ if(prev)return 'с закрытия предыдущего дня';
+ return (LANG==='en'?'since ':'с ')+new Date(t*1000).toLocaleDateString(LOC,{day:'numeric',month:'short'});
+}
+function tickLbl(t,ty){const d=new Date(t*1000);return ty>=3?d.toLocaleTimeString(LOC,{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString(LOC,{day:'numeric',month:'short'})}
+function setSess(pts,prev){
+ const el=document.querySelector('.sess');if(!el||!pts||!pts.length||!prev)return;
+ const day=new Date(pts[pts.length-1][0]*1000).toLocaleDateString(LOC,{day:'numeric',month:'short',timeZone:'America/New_York'}).replace('.','');
+ const pre=pts.filter(p=>etMin(p[0])<570).pop(),cl=pts.filter(p=>{const m=etMin(p[0]);return m>=570&&m<960}).pop(),po=pts.filter(p=>etMin(p[0])>=960).pop();
+ const f=p=>p?`$${p[1].toFixed(2)} (${pct((p[1]/prev-1)*100)})`:'нет данных';
+ const cls=p=>p?((p[1]>=prev)?'up':'dn'):'';
+ const bs=el.querySelectorAll('div');
+ [['Пре-маркет',pre],['Закрытие',cl],['Пост-маркет',po]].forEach(([n,p],i)=>{
+  if(!bs[i])return;bs[i].querySelector('small').textContent=n+' · '+day;
+  const b=bs[i].querySelector('b');b.textContent=f(p);b.className='mono '+cls(p)});
+}
+async function loadSeries(r){
+ try{
+  const res=await fetch('/api/series?r='+r,{cache:'no-store'});
+  if(!res.ok)return false;
+  const j=await res.json();
+  if(!j||!Array.isArray(j.points)||j.points.length<2)return false;
+  LIVE.ser[r]=j.points.map(p=>[p[0],p[1]]);
+  if(r===0){LIVE.prev=j.prevClose||null;setSess(LIVE.ser[0],LIVE.prev)}
+  LIVE.ok=true;LIVE.t=Date.now();return true;
+ }catch(e){return false}
+}
+function liveBadge(){
+ let b=document.getElementById('lvs');
+ if(!b){b=document.createElement('div');b.id='lvs';b.className='d';b.style.cssText='font-size:12px;margin:6px 2px 0;opacity:.8';const c=$('chart');c.parentNode.insertBefore(b,c)}
+ const hn=document.getElementById('histnote');if(hn&&LIVE.ok)hn.textContent='Диапазоны 1Д, 1Н и 1М показывают минутные и получасовые/часовые цены (источник — Twelve Data); пре- и пост-маркет появляются, только если тариф источника их отдаёт. Диапазоны от 6М и дальше — дневные закрытия; до 3 августа 2026 года это отдельные точки и итоги лет, между ними линия прямая.';
+ b.textContent=LIVE.ok?('● Живые данные · обновлено '+new Date(LIVE.t).toLocaleTimeString(LOC,{hour:'2-digit',minute:'2-digit'})):'';
+}
+async function liveRefresh(first){
+ const ok=await Promise.all([loadSeries(0),loadSeries(1),loadSeries(2)]);
+ if(ok.some(Boolean)){liveBadge();if(!$('stock').hidden&&!LIVE.hover&&RNG<=2)chart()}
+}
+setInterval(()=>{if(!document.hidden&&!$('stock').hidden)liveRefresh()},60000);
+const EN_PAIRS={"Главная": "Home", "О нас": "About", "Помощник по инвестициям": "Investing assistant", "Акции понятным языком": "Stocks in plain language", "FinScope собирает отчёты компаний из SEC, цены, опционы и новости со всего мира. Затем объясняет простыми словами, в чём сила и слабость акции, от чего зависит её рост и какие есть риски.": "FinScope gathers company filings from the SEC, prices, options and news from around the world. Then it explains in simple words what makes a stock strong or weak, what its growth depends on and what the risks are.", "Найти": "Search", "Попробуй:": "Try:", "Отчёты и цифры": "Filings and numbers", "Данные из отчётов компании в SEC, дневные цены, итоги по годам, долг и денежные запасы.": "Data from the company's SEC filings, daily prices, year-by-year results, debt and cash reserves.", "Опционы и новости": "Options and news", "Что ставят трейдеры на опционном рынке и какие события в мире давят на акцию или поддерживают её.": "What traders are betting on in the options market and which world events weigh on the stock or support it.", "Вердикт и сценарии": "Verdict and scenarios", "Сильные и слабые стороны, три сценария цены и оценка риска. Без команд «покупай» и «продавай».": "Strengths and weaknesses, three price scenarios and a risk rating. No “buy” or “sell” commands.", "Сейчас в базе одна акция: MARA Holdings (Marathon Digital Holdings). Другие компании добавляются по запросу. FinScope не является инвестиционным советником, решение остаётся за тобой.": "There is currently one stock in the database: MARA Holdings (Marathon Digital Holdings). Other companies are added on request. FinScope is not an investment adviser; the decision is yours.", "FinScope помогает разобраться в акциях тем, кто только начинает инвестировать. Мы читаем отчёты компаний, смотрим на цены, опционы и новости, а потом объясняем, что из этого следует, понятным языком и с ссылками на источники.": "FinScope helps people who are just starting to invest make sense of stocks. We read company filings, look at prices, options and news, and then explain what follows from them in plain language, with links to sources.", "Мы не даём индивидуальных инвестиционных советов и не обещаем доходность: любой вердикт на сайте показывает сценарии и риски, а решение принимаешь ты.": "We do not give personal investment advice and do not promise returns: every verdict on the site shows scenarios and risks, and the decision is yours.", "Связаться с нами": "Contact us", "Телефон": "Phone", "Скопировать": "Copy", "Открыть в Telegram ↗": "Open in Telegram ↗", "Снимок рынка: 20 окт. 2026": "Market snapshot: 20 Oct 2026", "NVDA · скоро": "NVDA · soon", "JPM · скоро": "JPM · soon", "+ любая акция: напиши в чате": "+ any stock: ask in the chat", "NASDAQ: MARA · из майнинга биткоина в энергетику и AI": "NASDAQ: MARA · from bitcoin mining to energy and AI", "▼ 24,5% с 8 окт. ($9.91)": "▼ 24.5% since 8 Oct ($9.91)", "день: $7.13 – $7.83": "day: $7.13 – $7.83", "капитализация $2,89 млрд": "market cap $2.89 bn", "52 нед.: $6.66 – $21.04": "52 wk: $6.66 – $21.04", "Пре-маркет · 20 окт.": "Pre-market · 20 Oct", "нет данных": "no data", "Закрытие · 20 окт.": "Close · 20 Oct", "Пост-маркет · 20 окт.": "Post-market · 20 Oct", "Дневные цены есть с 3 августа по 20 октября 2026 года, раньше только отдельные точки и итоги лет, и между ними линия прямая. Минутных данных и пре-маркета нет, пост-маркет есть только за 20 октября.": "Daily prices run from 3 August to 20 October 2026; before that there are only single points and year-end results, joined by a straight line. There is no minute data or pre-market, and post-market exists only for 20 October.", "Вердикт FinScope": "FinScope verdict", "Дешевле, но не безопаснее: ставка на разворот без подтверждения": "Cheaper, but not safer: a bet on a rebound without confirmation", "За две недели акция упала с $9,91 до $7,48 после понижения рейтинга банками JPMorgan и Morgan Stanley, слабого биткоина и дорогих денег. Опционный рынок настроен умеренно бычье (колл-опционов больше), но ждёт огромных колебаний. Рост до целей аналитиков возможен, только если компания подпишет договоры аренды под AI и закроет сделку Long Ridge. Подтверждений пока нет.": "In two weeks the stock fell from $9.91 to $7.48 after downgrades from JPMorgan and Morgan Stanley, weak bitcoin and expensive money. The options market is moderately bullish (more calls), but expects huge swings. A rise to analyst targets is possible only if the company signs AI lease deals and closes the Long Ridge deal. No confirmation yet.", "Оценки по пятибалльной шкале выставлены по фактам из вкладок ниже. Это не прогноз и не инвестиционная рекомендация.": "Ratings use a five-point scale based on the facts in the tabs below. This is not a forecast or investment advice.", "Данные: отчёты компании в SEC (8-K, 10-Q), биржевые и опционные сайты, новости за июль – октябрь 2026. Дневные цены 3 авг – 20 окт 2026 взяты из таблиц котировок, более ранние точки отрывочные, минутной ленты нет. Источники иногда расходятся, поэтому проверяй ключевые цифры сам. FinScope не является инвестиционным советником.": "Data: company filings with the SEC (8-K, 10-Q), exchange and options sites, news from July to October 2026. Daily prices for 3 Aug – 20 Oct 2026 come from quote tables, earlier points are patchy, and there is no minute feed. Sources sometimes disagree, so check key figures yourself. FinScope is not an investment adviser.", "Фундамент": "Fundamentals", "слабый": "weak", "Новости и макро": "News and macro", "негатив": "negative", "Опционы": "Options", "умеренно +": "moderate +", "Потенциал роста": "Upside potential", "средний": "medium", "Риск потерь": "Risk of loss", "максимум": "maximum", "Энергия и земля под AI": "Energy and land for AI", "Мощности около 1,9 ГВт, с Long Ridge и участком в Техасе до 4,8 ГВт. Свободных дата-центров в США почти нет (простой около 1%), а у майнеров уже есть энергия.": "Capacity of about 1.9 GW, up to 4.8 GW with Long Ridge and the Texas site. There are almost no vacant data centers in the US (vacancy about 1%), and miners already have power.", "Майнинг растёт в объёмах": "Mining volumes are growing", "Хешрейт +22% до 70,3 EH/s, добыто 2 422 BTC (+3%).": "Hashrate +22% to 70.3 EH/s, 2,422 BTC mined (+3%).", "Долг сократили без выпуска акций": "Debt cut without issuing shares", "В 1-м полугодии продали 23 093 BTC примерно за $1,6 млрд и выкупили около $1 млрд конвертируемых облигаций с дисконтом.": "In the first half it sold 23,093 BTC for about $1.6 bn and bought back about $1 bn of convertible bonds at a discount.", "Long Ridge даёт стабильный поток": "Long Ridge provides a steady stream", "Газовая станция в Огайо 505 МВт, более 70% выработки продано по долгосрочным контрактам. Сделка $1,5 млрд вместе с долгом.": "A 505 MW gas plant in Ohio, with more than 70% of output sold under long-term contracts. The deal is $1.5 bn including debt.", "Капитализация сопоставима с активами": "Market cap is comparable to assets", "Капитализация $2,89 млрд, а на 30 июня было $2,5 млрд в наличных и биткоине. Правда, долг около $2,4 млрд.": "Market cap is $2.89 bn, while on 30 June there was $2.5 bn in cash and bitcoin. However, debt is about $2.4 bn.", "Аналитики в среднем всё ещё за": "Analysts on average are still positive", "8 рекомендаций «покупать», 1 «держать», 3 «продавать», средняя цель около $17,6. BlackRock и Dimensional увеличили доли во II квартале.": "8 “buy” ratings, 1 “hold”, 3 “sell”, average target about $17.6. BlackRock and Dimensional increased their stakes in Q2.", "Крупные убытки": "Large losses", "Выручка II квартала $174,9 млн (−27%), чистый убыток $611,3 млн против прибыли $808 млн годом ранее. $343 млн убытка бумажные (переоценка биткоина), но это пятый убыточный квартал подряд.": "Q2 revenue was $174.9 M (−27%), net loss $611.3 M versus a profit of $808 M a year earlier. $343 M of the loss is on paper (bitcoin revaluation), but it is the fifth loss-making quarter in a row.", "Майнинг дорожает": "Mining is getting more expensive", "Энергия на один добытый биткоин обошлась в $38 690 против $33 735 год назад. При биткоине около $80 тыс. маржа тонкая.": "Energy per mined bitcoin cost $38,690 versus $33,735 a year ago. With bitcoin around $80k the margin is thin.", "Долг под залог биткоина": "Debt secured by bitcoin", "Кредиты на $600 млн обеспечены 18 750 BTC (около 54% запаса), ставка около 7,56%, часть плавающая (ставка ФРС + 3,875 п.п.). Падение биткоина потребует больше залога.": "Loans of $600 M are secured by 18,750 BTC (about 54% of holdings), rate about 7.56%, partly floating (Fed rate + 3.875 pp). A fall in bitcoin will require more collateral.", "Банки понизили рейтинг": "Banks downgraded the stock", "JPMorgan перевёл акцию в Underweight (цель $11 вместо $13), Morgan Stanley держит Underweight с целью $10.": "JPMorgan moved the stock to Underweight (target $11 instead of $13), Morgan Stanley stays Underweight with a $10 target.", "AI-договоров ещё нет": "No AI contracts yet", "CEO обещает два договора аренды до конца года, но в начале октября не было ни одного. Конкуренты уже подписали сделки.": "The CEO promises two lease deals by year-end, but there were none in early October. Competitors have already signed deals.", "Слабая ликвидность": "Weak liquidity", "По оценкам агрегаторов, текущая ликвидность ниже 1, долг к капиталу около 1,5. Рынок боится новых продаж биткоина.": "Aggregators estimate the current ratio is below 1 and debt to equity about 1.5. The market fears new bitcoin sales.", "Сделка зависит от регулятора": "The deal depends on the regulator", "Long Ridge ждёт одобрения FERC, срок закрытия 30 ноября 2026.": "Long Ridge awaits FERC approval, closing deadline 30 November 2026.", "Окт.": "Oct", "JPMorgan: двойное понижение до Underweight, цель $11": "JPMorgan: double downgrade to Underweight, target $11", "Банк считает, что «лёгкая» AI-стратегия MARA создаёт меньше стоимости, чем у конкурентов с собственной энергетикой.": "The bank believes MARA’s “light” AI strategy creates less value than that of competitors with their own power.", "9 окт.": "9 Oct", "Morgan Stanley снизил цель до $10, рейтинг Underweight": "Morgan Stanley cut its target to $10, rating Underweight", "Причина: удешевление площадок в более жёсткой кредитной среде для AI-проектов.": "Reason: cheaper sites in a tougher credit environment for AI projects.", "14 окт.": "14 Oct", "Акция −9,7% до $8,23: биткоин около $81,8 тыс. и страх новых продаж BTC": "Stock −9.7% to $8.23: bitcoin around $81.8k and fear of new BTC sales", "С 6 по 13 октября акция потеряла 17%, а S&P 500 почти не изменился: давление отраслевое.": "From 6 to 13 October the stock lost 17% while the S&P 500 barely changed: the pressure is sector-wide.", "Инфляция в США за сентябрь 3,7%, шансы повышения ставки ФРС в октябре выше 50%": "US inflation for September 3.7%, odds of a Fed rate hike in October above 50%", "Майнеры, торгующиеся как AI-инфраструктура, падали вместе с CoreWeave и Oracle.": "Miners trading as AI infrastructure fell along with CoreWeave and Oracle.", "Доходность 10-летних гособлигаций США около 5,3%, 30-летних выше 5,7%": "US 10-year Treasury yield around 5.3%, 30-year above 5.7%", "Дорогие деньги бьют по компаниям, строящим дата-центры в долг. ФРС называет среди причин и огромные займы на AI.": "Expensive money hits companies building data centers on debt. The Fed also cites huge AI borrowing among the reasons.", "Группа «майнер → AI» обгоняет биткоин: корзина +56% против −17% у BTC": "The “miner → AI” group is outpacing bitcoin: basket +56% versus −17% for BTC", "Рынок платит за энергию и дата-центры, но MARA пока не показала собственных AI-договоров.": "The market pays for energy and data centers, but MARA has not yet shown its own AI contracts.", "Авг.": "Aug", "Кредиты на $600 млн (Coinbase, Two Prime) без выпуска акций": "$600 M loans (Coinbase, Two Prime) without issuing shares", "Деньги идут на Long Ridge. Риск размытия долей снижается, долг растёт.": "The money goes to Long Ridge. The risk of dilution falls, debt rises.", "9 июля": "9 July", "Участок в Техасе: до 1 ГВт к октябрю 2027 и до 2 ГВт к апрелю 2028": "Texas site: up to 1 GW by October 2027 and up to 2 GW by April 2028", "Долгосрочный драйвер, но зависит от поиска арендатора.": "A long-term driver, but depends on finding a tenant.", "Дефицит дата-центров: простой около 1%": "Data center shortage: vacancy about 1%", "Выигрывают компании, у которых уже есть подключённая энергия, включая майнеров.": "Companies that already have connected power, including miners, benefit.", "Письмо акционерам за II квартал 2026 (8-K, SEC)": "Q2 2026 shareholder letter (8-K, SEC)", "Отчёт 10-Q за I квартал 2026 (SEC)": "Q1 2026 10-Q report (SEC)", "Все документы MARA на SEC EDGAR": "All MARA documents on SEC EDGAR", "Дневные цены 11 авг. – 20 окт. и пост-маркет (StockAnalysis)": "Daily prices 11 Aug – 20 Oct and post-market (StockAnalysis)", "Дневные цены 3 авг. – 1 сен. (Investing.com)": "Daily prices 3 Aug – 1 Sep (Investing.com)", "Дневные цены 14 сен. – 16 окт., проверка (StockInvest)": "Daily prices 14 Sep – 16 Oct, cross-check (StockInvest)", "Итоги по годам 2013–2024, рекорды (Macrotrends)": "Year-end results 2013–2024, records (Macrotrends)", "Изменение цены по годам (CompaniesMarketCap)": "Price change by year (CompaniesMarketCap)", "Цены 8 окт. 2021, 2023, 2025 и 2012 (Motley Fool)": "Prices for 8 Oct 2021, 2023, 2025 and 2012 (Motley Fool)", "Опционы: IV по срокам (Market Chameleon)": "Options: IV by expiry (Market Chameleon)", "Опционы: IV, put/call, open interest (Barchart)": "Options: IV, put/call, open interest (Barchart)", "Опционы: цепочка на 18 дек. (Macroaxis)": "Options: chain for 18 Dec (Macroaxis)", "Падение 14 октября и цели банков (MarketBeat)": "The 14 October drop and bank targets (MarketBeat)", "Понижение JPMorgan, цели аналитиков (StocksToTrade)": "JPMorgan downgrade, analyst targets (StocksToTrade)", "Итоги II квартала (Blockspace)": "Q2 results (Blockspace)", "Продажи биткоина и выкуп облигаций (Blockspace)": "Bitcoin sales and bond buyback (Blockspace)", "Кредиты под залог BTC (The Energy Mag)": "Loans secured by BTC (The Energy Mag)", "Макро: инфляция и ставка ФРС (Altcoin Buzz)": "Macro: inflation and the Fed rate (Altcoin Buzz)", "Итог": "Verdict", "Терминал": "Terminal", "Сильные и слабые": "Strengths & weaknesses", "Новости мира": "World news", "Сценарии": "Scenarios", "Источники": "Sources", "Ключевые цифры": "Key figures", "Выручка II кв.": "Q2 revenue", "$174,9 млн": "$174.9 M", "Чистый убыток II кв.": "Q2 net loss", "−$611 млн": "−$611 M", "Биткоин (30 июня)": "Bitcoin (30 June)", "Долг": "Debt", "≈ $2,4 млрд": "≈ $2.4 bn", "Наличные": "Cash", "$421 млн": "$421 M", "Цель аналитиков (средняя)": "Analyst target (average)", "Почему акция может принести прибыль": "Why the stock could make a profit", "Рынок оценивает бывших майнеров как владельцев энергии и дата-центров. Акция упала сильно, и если появятся договоры аренды под AI, а Long Ridge будет закрыта, возможен резкий отскок к целям аналитиков. Для этого должны сложиться три вещи.": "The market values former miners as owners of energy and data centers. The stock has fallen sharply, and if AI lease deals appear and Long Ridge closes, a sharp rebound toward analyst targets is possible. Three things must come together for that.", "Что может сломать идею": "What could break the idea", "Котировка · 20 окт.": "Quote · 20 Oct", "Аналитики": "Analysts", "8 покупать · 1 держать · 3 продавать": "8 buy · 1 hold · 3 sell", "Баланс · 30 июня": "Balance · 30 June", "Операции": "Operations", "Макро": "Macro", "* даты не подтверждены. Данные на 14 октября и позже.": "* dates not confirmed. Data as of 14 October and later.", "Отрасль · падение 8 и 14 окт.": "Sector · the 8 and 14 Oct drops", "Календарь событий": "Event calendar", "* дата не подтверждена.": "* date not confirmed.", "Что говорят опционы": "What options say", "Опционы показывают, как рынок оценивает будущие колебания и во что ставят трейдеры. Это настроение, а не прогноз.": "Options show how the market prices future swings and what traders are betting on. This is sentiment, not a forecast.", "Подразумеваемая волатильность (IV)": "Implied volatility (IV)", "Put/Call по объёму": "Put/Call by volume", "Put/Call по открытым позициям": "Put/Call by open interest", "Открытых колл-опционов": "Open calls", "Открытых пут-опционов": "Open puts", "Ожидаемый диапазон цены": "Expected price range", "Расчёт по IV: один стандартный разброс от цены $7.48. По оценке рынка опционов, цена окажется внутри диапазона примерно в двух случаях из трёх. Чёрная черта — цена сейчас.": "Based on IV: one standard deviation from the $7.48 price. By the options market’s estimate, the price will land inside the range about two times out of three. The black line is the current price.", "Как это читать": "How to read this", "В вердикт опционы входят как сигнал настроения: 3 из 5 (умеренно бычье настроение, но очень дорогие и рискованные ставки). Данные собраны 19–21 октября из нескольких публичных источников, у части время обновления не указано.": "Options enter the verdict as a sentiment signal: 3 out of 5 (moderately bullish sentiment, but very expensive and risky bets). Data collected 19–21 October from several public sources; some do not state their update time.", "Сильные стороны": "Strengths", "Слабые стороны": "Weaknesses", "Новости, которые влияют на MARA": "News that affects MARA", "Плюс — поддерживает акцию, минус — давит, ± — неоднозначно.": "Plus — supports the stock, minus — weighs on it, ± — mixed.", "· источник": "· source", "Сценарии цены": "Price scenarios", "Цели привязаны к ориентирам: нижняя граница диапазона по опционам до 18 декабря, цель Morgan Stanley и средняя цель аналитиков. Это допущения, а не прогноз. Меняй числа под себя.": "Targets are tied to reference points: the lower bound of the options range to 18 December, Morgan Stanley’s target and the average analyst target. These are assumptions, not a forecast. Change the numbers to suit you.", "Цена сейчас, $": "Price now, $", "Сумма, $": "Amount, $", "Источники данных": "Data sources", "AI-договоров нет, ставка ФРС растёт, биткоин слабеет: акция уходит ниже минимума февраля ($6.66).": "No AI contracts, the Fed rate rises, bitcoin weakens: the stock drops below the February low ($6.66).", "Часть планов выполняется, но без прорыва: акция возвращается к целям осторожных банков ($10–11).": "Some plans are carried out, but no breakthrough: the stock returns to the targets of cautious banks ($10–11).", "Подписан AI-договор, Long Ridge закрыта, доходности снижаются: акция идёт к средней цели аналитиков.": "An AI contract is signed, Long Ridge closes, yields fall: the stock heads toward the average analyst target.", "начало истории по данным Motley Fool": "start of history per Motley Fool data", "закрытие года (расчётное по данным годовых изменений)": "year-end close (estimated from annual changes)", "исторический максимум закрытия": "all-time closing high", "исторический минимум закрытия": "all-time closing low", "пост-маркет: $7.61 (+1,74%) в 17:58 по Нью-Йорку, пре-маркет: нет данных": "post-market: $7.61 (+1.74%) at 17:58 New York time, pre-market: no data", "закрытие года": "year-end close", "1Д": "1D", "1Н": "1W", "1М": "1M", "6М": "6M", "1Г": "1Y", "5Л": "5Y", "Всё": "All", "Не удалось загрузить библиотеку графика.": "Could not load the chart library.", "Цена": "Price", "С начала периода": "Since period start", "Открытие": "Open", "Максимум": "High", "Минимум": "Low", "Объём": "Volume", "бывш. Marathon Digital Holdings · NASDAQ": "formerly Marathon Digital Holdings · NASDAQ", "· пост-маркет": "· post-market", "с закрытия предыдущего дня": "from previous close", "Пре-маркет": "Pre-market", "Закрытие": "Close", "Пост-маркет": "Post-market", "Диапазоны 1Д, 1Н и 1М показывают минутные и получасовые/часовые цены (источник — Twelve Data); пре- и пост-маркет появляются, только если тариф источника их отдаёт. Диапазоны от 6М и дальше — дневные закрытия; до 3 августа 2026 года это отдельные точки и итоги лет, между ними линия прямая.": "Ranges 1D, 1W and 1M show minute and 30-minute/hourly prices (source — Twelve Data); pre- and post-market appear only if the source plan provides them. Ranges from 6M onward are daily closes; before 3 August 2026 these are single points and year-end results, joined by a straight line.", "● Живые данные · обновлено": "● Live data · updated", "» пока нет в базе. Сейчас доступна только MARA (Marathon Digital Holdings). Другие акции добавляются по запросу владельца сайта.": "» is not in the database yet. Only MARA (Marathon Digital Holdings) is available now. Other stocks are added on request from the site owner.", "Номер скопирован.": "Number copied.", "Номер выделен, скопируй его вручную.": "Number selected, copy it manually.", "FinScope, на главную": "FinScope, home", "Разделы": "Sections", "Тикер или название: MARA, Marathon Digital Holdings": "Ticker or name: MARA, Marathon Digital Holdings", "Поиск акции": "Stock search", "Логотип MARA": "MARA logo", "Диапазон графика": "Chart range", "График цены MARA": "MARA price chart", "−24,5% с 8 окт.": "−24.5% since 8 Oct", "≈$82 тыс.": "≈$82k", "CPI США (сент.)": "US CPI (Sep)", "Шанс повышения ставки ФРС": "Chance of a Fed rate hike", "· пре-маркет": "· pre-market", "Договоры аренды": "Lease deals", "Первый из двух обещанных AI-договоров до конца 2026 года.": "The first of two promised AI deals by the end of 2026.", "Сделка Long Ridge": "Long Ridge deal", "Одобрение FERC и закрытие до 30 ноября 2026.": "FERC approval and closing by 30 November 2026.", "Деньги и биткоин": "Money and bitcoin", "Устойчивый биткоин и снижение доходностей облигаций.": "Steady bitcoin and falling bond yields.", "Ставка ФРС и инфляция": "Fed rate and inflation", "Повышение ставки удорожает кредиты и давит на всю группу.": "A rate hike makes loans costlier and weighs on the whole group.", "Падение биткоина": "Bitcoin drop", "Часть долга обеспечена биткоином, при падении нужен дополнительный залог.": "Part of the debt is secured by bitcoin; a drop requires extra collateral.", "Нет AI-договоров к декабрю": "No AI deals by December", "Главное обоснование роста исчезает, а убытки остаются.": "The main case for growth disappears while the losses remain.", "Понижения рейтингов": "Rating downgrades", "Если к JPMorgan и Morgan Stanley присоединятся другие банки, давление усилится.": "If other banks join JPMorgan and Morgan Stanley, the pressure will grow.", "Максимум дня": "Day high", "Минимум дня": "Day low", "Средний объём": "Average volume", "Капитализация": "Market cap", "Бета": "Beta", "52 недели": "52 weeks", "Средняя цель": "Average target", "Биткоин": "Bitcoin", "Стоимость биткоина": "Bitcoin value", "Общий долг": "Total debt", "Конвертируемые облигации": "Convertible bonds", "BTC в залоге": "BTC pledged", "BTC выдано в займы": "BTC lent out", "Ставка новых кредитов": "Rate on new loans", "Покупка Long Ridge": "Long Ridge purchase", "Выручка 1-е полугодие": "H1 revenue", "Чистый убыток I кв.": "Q1 net loss", "Хешрейт": "Hashrate", "Добыто BTC (II кв.)": "BTC mined (Q2)", "Энергия на 1 BTC": "Energy per 1 BTC", "Мощности": "Capacity", "Доходность 10 лет США": "US 10-year yield", "Доходность 30 лет США": "US 30-year yield", "Инфляция США (сент.)": "US inflation (Sep)", "Шанс повышения ставки (окт.)": "Chance of a rate hike (Oct)", "Заседание ФРС": "Fed meeting", "Индекс AI-дата-центров": "AI data center index", "−7,5% (21 из 23 вниз)": "−7.5% (21 of 23 down)", "Экспирация опционов": "Options expiry", "ФРС*": "Fed*", "Начало ноября": "Early November", "Отчёт III кв.*": "Q3 report*", "Срок закрытия Long Ridge": "Long Ridge closing deadline", "Срок двух AI-договоров": "Deadline for two AI deals", "До 20 ноября (IV ≈ 89%)": "To 20 Nov (IV ≈ 89%)", "Возможное движение примерно ±26% за месяц.": "Possible move of about ±26% over a month.", "До 18 декабря (IV ≈ 87%)": "To 18 Dec (IV ≈ 87%)", "Возможное движение примерно ±35% за два месяца.": "Possible move of about ±35% over two months.", "Колл-опционов больше, чем пут": "More calls than puts", "Put/Call ниже 1 означает, что трейдеры чаще ставят на рост, чем покупают защиту. Это умеренно бычий сигнал.": "Put/Call below 1 means traders bet on a rise more often than they buy protection. This is a moderately bullish signal.", "Но это может быть «ловля дна»": "But this could be “bottom fishing”", "После падения на 22% многие покупают колл-опционы дёшево. Такая позиция не гарантирует разворот.": "After a 22% fall many buy cheap calls. Such a position does not guarantee a reversal.", "Волатильность экстремальная": "Extreme volatility", "IV около 87% означает, что рынок ждёт очень больших движений в обе стороны, и опционы стоят дорого. Новичкам покупка опционов чаще приводит к потере всей суммы.": "IV around 87% means the market expects very large moves in both directions, and options are expensive. For beginners, buying options more often leads to losing the whole amount.", "Цепочка на 18 декабря (сентябрь)": "Chain for 18 Dec (September)", "Максимум открытых пут-позиций был на страйке $7, колл-позиций на $25. Данные устарели: цена тогда была намного выше.": "Open put interest peaked at the $7 strike, calls at $25. The data is stale: the price was much higher then.", "Минутных данных нет, есть только сводка дня.": "No minute data; only the day summary.", "По этому дню известна только цена закрытия.": "Only the closing price is known for this day.", "Живые данные Twelve Data (с задержкой, если у источника так задано). Время — ваше местное.": "Live data from Twelve Data (delayed if the source plan says so). Times are in your local time."};
+const CYR=/[А-Яа-яЁё]/;
+const EN_RX=Object.keys(EN_PAIRS).sort((a,b)=>b.length-a.length).map(k=>[new RegExp('(?<![А-Яа-яЁё])'+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![А-Яа-яЁё])','g'),EN_PAIRS[k]]);
+const MON={'янв':'Jan','фев':'Feb','мар':'Mar','апр':'Apr','мая':'May','июн':'Jun','июл':'Jul','авг':'Aug','сен':'Sep','окт':'Oct','ноя':'Nov','дек':'Dec'};
+function trTxt(s){
+ if(!CYR.test(s))return s;
+ let o=s;
+ for(const [rx,e] of EN_RX)o=o.replace(rx,()=>e);
+ o=o.replace(/(\d+)\s*(янв|фев|мар|апр|мая|июн|июл|авг|сен|окт|ноя|дек)[а-я]*\.?/g,(m,d,mo)=>d+' '+MON[mo]);
+ o=o.replace(/(\d)\s*млрд/g,'$1 bn').replace(/(\d)\s*млн/g,'$1 M').replace(/(\d)\s*тыс\./g,'$1k').replace(/ГВт/g,'GW').replace(/МВт/g,'MW');
+ return o.replace(/(\d),(\d)/g,'$1.$2');
+}
+const TN=new Map(),ATT=[],ATTR=['aria-label','placeholder','title','alt'];
+function trNode(n){
+ if(n.nodeType===3){
+  const v=n.nodeValue,rec=TN.get(n);
+  if(rec&&v===rec.en)return;
+  if(!CYR.test(v)){
+   if(/\d,\d/.test(v)&&n.parentElement&&n.parentElement.closest('#tape')){const e2=v.replace(/(\d),(\d)/g,'$1.$2');TN.set(n,{ru:v,en:e2});n.nodeValue=e2}
+   return;
+  }
+  const en=trTxt(v);
+  if(en!==v){TN.set(n,{ru:v,en});n.nodeValue=en}
+  return;
+ }
+ if(n.nodeType!==1||n.tagName==='SCRIPT'||n.tagName==='STYLE')return;
+ if(n.id==='lang')return;
+ ATTR.forEach(a=>{const v=n.getAttribute&&n.getAttribute(a);if(v&&CYR.test(v)){const en=trTxt(v);if(en!==v){ATT.push([n,a,v]);n.setAttribute(a,en)}}});
+ n.childNodes.forEach(trNode);
+}
+const OBS=new MutationObserver(ms=>{
+ if(LANG!=='en')return;
+ ms.forEach(m=>{
+  if(m.type==='characterData')trNode(m.target);
+  else m.addedNodes.forEach(trNode);
+ });
+});
+OBS.observe(document.body,{childList:true,subtree:true,characterData:true});
+const FLAGS={ru:'<svg viewBox="0 0 9 6" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="9" height="2" fill="#fff"/><rect y="2" width="9" height="2" fill="#0039A6"/><rect y="4" width="9" height="2" fill="#D52B1E"/></svg>',en:'<svg viewBox="0 0 60 40" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="60" height="40" fill="#012169"/><path d="M0 0L60 40M60 0L0 40" stroke="#fff" stroke-width="8"/><path d="M0 0L60 40M60 0L0 40" stroke="#C8102E" stroke-width="3"/><path d="M30 0V40M0 20H60" stroke="#fff" stroke-width="13"/><path d="M30 0V40M0 20H60" stroke="#C8102E" stroke-width="8"/></svg>'};
+function langBtn(){
+ const b=document.getElementById('lang');if(!b)return;
+ b.innerHTML=FLAGS[LANG];
+ const t=LANG==='en'?'Language: English. Switch to Русский':'Язык: русский. Switch to English';
+ b.setAttribute('aria-label',t);b.title=t;
+}
+function applyLang(){
+ document.documentElement.lang=LANG;
+ if(LANG==='en'){trNode(document.body)}
+ else{
+  TN.forEach((rec,n)=>{if(n.isConnected&&n.nodeValue===rec.en)n.nodeValue=rec.ru});TN.clear();
+  ATT.forEach(([el,a,v])=>{if(el.isConnected)el.setAttribute(a,v)});ATT.length=0;
+ }
+ langBtn();
+}
+function setLang(l){
+ LANG=l;LOC=l==='en'?'en-GB':'ru-RU';
+ try{localStorage.setItem('fs_lang',l)}catch(e){}
+ applyLang();
+ if(typeof chart==='function'&&!$('stock').hidden){
+  const t=document.querySelector('.tab[aria-selected="true"]');
+  chart();tape();show(t?t.dataset.k:'ver');
+  if(LIVE.ser[0])setSess(LIVE.ser[0],LIVE.prev);
+  liveBadge();
+ }
+}
+document.getElementById('lang').addEventListener('click',()=>setLang(LANG==='en'?'ru':'en'));
+applyLang();
+
+function go(v){
+ ['home','about','stock'].forEach(id=>{$(id).hidden=id!==v});
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===v));
+ window.scrollTo(0,0);
+ if(v==='stock'){RNG=0;LIVE.hover=false;requestAnimationFrame(()=>{chart();pillars();countUp();tape();show('ver');liveRefresh(true)})}
+}
+function openStock(){$('sg').hidden=true;$('sm').hidden=true;go('stock')}
+function suggest(){
+ const q=$('q').value,r=findStocks(q),sg=$('sg');$('sm').hidden=true;
+ if(!r.length){sg.hidden=true;return}
+ sg.innerHTML=r.map(x=>`<button type="button" data-t="${x.t}">${LOGO?`<img alt="" src="${LOGO}">`:''}<div><b>${x.t} · ${x.name}</b><span>${x.sub}</span></div></button>`).join('');
+ sg.hidden=false;
+}
+$('q').addEventListener('input',suggest);
+$('sg').addEventListener('click',e=>{if(e.target.closest('button'))openStock()});
+$('sf').addEventListener('submit',e=>{
+ e.preventDefault();const q=$('q').value.trim();if(!q)return;
+ if(findStocks(q).length){openStock();return}
+ $('sg').hidden=true;const m=$('sm');m.hidden=false;m.textContent='«'+q+'» пока нет в базе. Сейчас доступна только MARA (Marathon Digital Holdings). Другие акции добавляются по запросу владельца сайта.';
+});
+document.querySelectorAll('.ex').forEach(b=>b.addEventListener('click',()=>{$('q').value=b.dataset.q;suggest();$('q').focus()}));
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+$('goHome').addEventListener('click',()=>go('home'));
+$('cpb').addEventListener('click',async()=>{
+ const m=$('cpm'),n='+447881197537';
+ try{await navigator.clipboard.writeText(n);m.textContent='Номер скопирован.'}
+ catch(e){const r=document.createRange();r.selectNodeContents($('ph'));const sel=getSelection();sel.removeAllRanges();sel.addRange(r);m.textContent='Номер выделен, скопируй его вручную.'}
+});
+go('home');
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(!$('stock').hidden)chart()})}catch(e){}
+</script>
+</body>
+</html>
