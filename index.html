@@ -60,6 +60,20 @@ main{max-width:820px;margin:0 auto;padding:16px 16px 60px}
 
 .seg{display:inline-flex;gap:2px;padding:3px;background:var(--chip);border:1px solid var(--bd);border-radius:99px}.seg button{display:inline-flex;align-items:center;gap:5px;border:0;background:none;color:var(--mu);font:inherit;font-weight:700;font-size:13px;padding:7px 14px;border-radius:99px;cursor:pointer;transition:background .15s,color .15s}.seg button i{font-style:normal;font-size:9px}.seg button:hover{color:var(--tx)}.seg button.on{background:var(--card);color:var(--tx);box-shadow:0 1px 6px rgba(0,0,0,.18)}.seg button[data-s=u].on i{color:var(--ok)}.seg button[data-s=d].on i{color:var(--bad)}.seg button:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
 .mk-f{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.mk-f button{border:1px solid var(--bd);background:var(--chip);color:var(--tx);font:inherit;font-weight:700;font-size:13px;border-radius:99px;padding:7px 13px;cursor:pointer}.mk-f button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.mk-f{position:relative}.mk-f button.mo{display:inline-flex;align-items:center;gap:5px}.mk-pop{position:absolute;z-index:200;top:calc(100% + 6px);left:0;min-width:220px;max-width:calc(100vw - 32px);max-height:320px;overflow:auto;background:var(--bg);border:1px solid var(--bd);border-radius:18px;padding:6px;box-shadow:0 18px 40px rgba(0,0,0,.4)}.mk-pop button{display:flex;width:100%;justify-content:space-between;align-items:center;border:0;background:none;border-radius:12px;padding:10px 12px;color:var(--tx);font:inherit;font-weight:600;font-size:14px;text-align:left;cursor:pointer}.mk-pop button:hover,.mk-pop button.on{background:var(--chip)}.mk-pop button small{color:var(--mu);font-weight:600}
+.mk-f-w{position:relative;display:inline-block}
+.mk-bk{display:flex;align-items:center;gap:12px;margin-bottom:12px}.mk-bk button{border:1px solid var(--bd);background:var(--chip);color:var(--tx);font:inherit;font-weight:700;font-size:13px;border-radius:99px;padding:7px 13px;cursor:pointer}.mk-bk span{color:var(--mu);font-size:13px}
+.mk-rh{display:flex;align-items:baseline;justify-content:space-between;margin:6px 0 10px}.mk-rh h3{margin:0;font-size:19px;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}.mk-rh i{width:9px;height:9px;border-radius:50%;display:inline-block}.mk-rh span{color:var(--mu);font-size:13px;font-weight:700}
+.seg[hidden],.mk-bk[hidden],.mk-all[hidden],.mk-f[hidden]{display:none}
+@media (max-width:560px){.mk-pop{position:fixed;left:16px;right:16px;top:auto;bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:none;max-height:60vh;box-shadow:0 0 0 100vmax rgba(0,0,0,.45),0 18px 40px rgba(0,0,0,.5)}}
+.mk-row{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;margin:0 -2px 14px;scroll-snap-type:x proximity;scrollbar-width:none}.mk-row::-webkit-scrollbar{display:none}
+.rc{flex:0 0 212px;scroll-snap-align:start;display:block;text-decoration:none;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:14px;transition:transform .15s,border-color .15s}.rc:hover{transform:translateY(-2px);border-color:var(--ac)}.rc:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.rc .rct{display:flex;align-items:center;gap:10px}.rc img,.rc .mkl{width:36px;height:36px;border-radius:12px;flex:none;object-fit:cover}.rc img.round{border-radius:50%}.rc .mkl{display:grid;place-items:center;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;font-weight:800;font-size:15px}
+.rc .rcn{min-width:0}.rc .rcn b{display:block;font-size:14px}.rc .rcn span{display:block;font-size:11.5px;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rc .rcp{display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px}.rc .rcp b{font-size:20px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}.rc .rcp span{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.rc svg{display:block;width:100%;height:30px;margin-top:8px}
+.mk-all{display:flex;justify-content:center;margin-top:6px}.mk-all button{border:1px solid var(--bd);background:var(--chip);color:var(--tx);font:inherit;font-weight:700;font-size:14px;border-radius:99px;padding:11px 20px;cursor:pointer}.mk-all button:hover{border-color:var(--ac)}
+@media (max-width:480px){.rc{flex-basis:172px}}
 .mk-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
 .mkc{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:22px;padding:14px;transition:transform .15s,border-color .15s}.mkc:hover{transform:translateY(-2px);border-color:var(--ac)}.mkc:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 .mkc img,.mkc .mkl{width:44px;height:44px;border-radius:14px;flex:none;object-fit:cover}.mkc img.round{border-radius:50%}.mkc .mkl{display:grid;place-items:center;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;font-weight:800;font-size:19px}
@@ -256,9 +270,12 @@ h3{font-size:20px}
   <div class="msg" id="sm" role="status" hidden></div>
  </div>
  <section class="hmk" id="hmk" hidden aria-labelledby="mkT">
-  <div class="mk-h"><h2 id="mkT">Акции на сайте</h2><div class="seg" id="mks" role="group" aria-label="Сортировка"><button type="button" data-s="n" class="on" aria-pressed="true">А–Я</button><button type="button" data-s="u" aria-pressed="false"><i aria-hidden="true">▲</i>Растут</button><button type="button" data-s="d" aria-pressed="false"><i aria-hidden="true">▼</i>Падают</button></div></div>
+  <div class="mk-h"><h2 id="mkT">Акции на сайте</h2><div class="seg" id="mks" hidden role="group" aria-label="Сортировка"><button type="button" data-s="n" class="on" aria-pressed="true">А–Я</button><button type="button" data-s="u" aria-pressed="false"><i aria-hidden="true">▲</i>Растут</button><button type="button" data-s="d" aria-pressed="false"><i aria-hidden="true">▼</i>Падают</button></div></div>
   <div class="mk-f" id="mkf" role="group" aria-label="Отрасль"></div>
+  <div class="mk-bk" id="mkb" hidden><button type="button" id="mkbb">← На главную</button><span id="mkbt"></span></div>
+  <div id="mkr"></div>
   <div class="mk-g" id="mkg"></div>
+  <div class="mk-all" id="mka" hidden><button type="button" id="mkab"></button></div>
   <p class="d mk-n" id="mkn">Цены на закрытие последней торговой сессии.</p>
  </section>
  <div class="feat">
@@ -688,7 +705,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('botp').hidden&&
 
 
 /* ===== Главная: карточки акций, фильтр по отрасли, сортировка ===== */
-let QT={},QSER={},LASTQ=0,QLIVE=0,QCL=0,MKF=-1,MKS='n';
+let QT={},QSER={},LASTQ=0,QLIVE=0,QCL=0,MKF=-1,MKS='n',MKV='h',MKO=false;
 async function loadQuotes(){try{const q=await getJSON(DATA_BASE+'quotes.json?'+Math.floor(Date.now()/120000));QT=q&&typeof q==='object'?q:{}}catch(e){QT={}}}
 async function liveQuotes(){
  try{
@@ -702,27 +719,71 @@ setInterval(()=>{if(!document.hidden&&!$('home').hidden)liveQuotes()},300000);
 function refreshHome(){hmRender();if(Date.now()-LASTQ>45000){LASTQ=Date.now();liveQuotes()}}
 // Цена из живого графика акции — тот же источник, что на странице акции: подставляем её в карточку, чтобы главная и страница совпадали.
 function syncQuote(t,pts,prev){try{if(!t||!pts||!pts.length)return;const c=pts[pts.length-1][1];if(!isFinite(c))return;const o=QT[t]||{};const p=prev||o.p;if(!(p>0))return;QT[t]=Object.assign({},o,{c,p});QSER[t]=Date.now();if(typeof hmRender==='function'&&REG.length)hmRender()}catch(e){}}
+function spark(t){
+ const q=QT[t];if(!q||!q.s||q.s.length<2)return'';
+ const s=q.s.slice();if(isFinite(q.c)&&s[s.length-1]!==q.c){if(QLIVE||QSER[t])s.push(q.c);else s[s.length-1]=q.c}
+ const mn=Math.min(...s),mx=Math.max(...s),r=(mx-mn)||1,up=!(q.p>0)||q.c>=q.p;
+ const pts=s.map((v,k)=>(k*100/(s.length-1)).toFixed(1)+','+(27-(v-mn)/r*24).toFixed(1)).join(' ');
+ return `<svg viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="${up?'var(--up)':'var(--dn)'}" stroke-width="1.7" vector-effect="non-scaling-stroke" stroke-linejoin="round" points="${pts}"/></svg>`;
+}
 function hmRender(){
  const box=$('hmk');if(!box)return;if(!REG.length){box.hidden=true;return}box.hidden=false;
- const en=LANG==='en',secs=[...new Set(REG.map(x=>x.sector).filter(Boolean))];
+ const en=LANG==='en',cnt={};REG.forEach(x=>{if(x.sector)cnt[x.sector]=(cnt[x.sector]||0)+1});
+ const secs=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]||a.localeCompare(b));
  const sName=x=>en?((x.en||{})[x.sector]||x.sector||''):(x.sector||'');
- if(MKF>=secs.length)MKF=-1;
- $('mkf').hidden=secs.length<2;
- $('mkf').innerHTML=secs.length<2?'':[[-1,en?'All':'Все']].concat(secs.map((s,i)=>[i,sName(REG.find(x=>x.sector===s))])).map(([i,l])=>`<button type="button" data-i="${i}" class="${i===MKF?'on':''}" aria-pressed="${i===MKF}">${l}</button>`).join('');
-const nt=$('mkn');if(nt){const en0=LANG==='en';nt.textContent=QLIVE&&!QCL?(en0?'Prices updated at ':'Цены обновлены в ')+new Date(QLIVE).toLocaleTimeString(en0?'en-GB':'ru-RU',{hour:'2-digit',minute:'2-digit'})+(en0?', with a delay of a few minutes.':', с задержкой в несколько минут.'):(en0?'Prices at the close of the last trading session.':'Цены на закрытие последней торговой сессии.')}
- document.querySelectorAll('#mks button').forEach(b=>{const on=b.dataset.s===MKS;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+ const secL=s=>sName(REG.find(x=>x.sector===s));
+ const ROWS=REG.length>=6;
+ if(!ROWS&&MKV==='h')MKV='a';
+ if(MKV==='s'&&(MKF<0||MKF>=secs.length)){MKV=ROWS?'h':'a';MKF=-1}
  const chg=x=>{const q=QT[x.t];return q&&q.p?(q.c-q.p)/q.p*100:null};
- let L=REG.filter(x=>MKF<0||x.sector===secs[MKF]);
+ // строка секторов: Главная (или Все) + 3 крупнейших + «Ещё»
+ const TOP=3,shown=secs.slice(0,TOP),rest=secs.slice(TOP);
+ const chip=(k,l,on)=>`<button type="button" data-k="${k}" class="${on?'on':''}" aria-pressed="${on}">${l}</button>`;
+ let h='';
+ if(secs.length>=2||ROWS){
+  h+=chip('h',ROWS?(en?'Home':'Главная'):(en?'All':'Все'),ROWS?MKV==='h':MKV==='a');
+  shown.forEach((s,k)=>{h+=chip('s'+k,secL(s),MKV==='s'&&MKF===k)});
+  if(rest.length){const inRest=MKV==='s'&&MKF>=TOP;h+=`<span class="mk-f-w"><button type="button" class="mo${inRest?' on':''}" data-k="more" aria-haspopup="true" aria-expanded="${MKO}">${inRest?secL(secs[MKF]):(en?'More':'Ещё')} ▾</button>`+(MKO?`<div class="mk-pop" role="menu">${rest.map((s,k)=>`<button type="button" role="menuitem" data-k="s${TOP+k}" class="${MKV==='s'&&MKF===TOP+k?'on':''}">${secL(s)}<small>${cnt[s]}</small></button>`).join('')}</div>`:'')+`</span>`}
+ }
+ $('mkf').hidden=!h;$('mkf').innerHTML=h;
+ const nt=$('mkn');if(nt){nt.textContent=QLIVE&&!QCL?(en?'Prices updated at ':'Цены обновлены в ')+new Date(QLIVE).toLocaleTimeString(en?'en-GB':'ru-RU',{hour:'2-digit',minute:'2-digit'})+(en?', with a delay of a few minutes.':', с задержкой в несколько минут.'):(en?'Prices at the close of the last trading session.':'Цены на закрытие последней торговой сессии.')}
+ document.querySelectorAll('#mks button').forEach(b=>{const on=b.dataset.s===MKS;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+ const logo=x=>x.logo?`<img${x.logoShape==='round'?' class="round"':''} alt="" loading="lazy" src="${logoUrl(x)}">`:`<span class="mkl">${x.t[0]}</span>`;
+ const fmt=c=>c==null?'':(c>=0?'+':'−')+Math.abs(c).toFixed(2).replace('.',en?'.':',')+'%';
+ const home=MKV==='h';
+ $('mks').hidden=home;
+ // назад + заголовок раздела
+ const bk=$('mkb');bk.hidden=home||!ROWS;
+ if(!bk.hidden){$('mkbb').textContent=en?'← Home':'← На главную';$('mkbt').textContent=MKV==='s'?secL(secs[MKF]):(en?'All stocks':'Все акции')}
+ // ряды «Растут» и «Падают»
+ let rows='';
+ if(home){
+  const card=x=>{const q=QT[x.t],c=chg(x);return `<a class="rc" href="/${x.t}" data-t="${x.t}"><div class="rct">${logo(x)}<div class="rcn"><b>${x.t}</b><span>${x.name}</span></div></div><div class="rcp"><b>${q?'$'+q.c.toFixed(2):''}</b><span class="${c==null?'':c>=0?'pos':'neg'}">${fmt(c)}</span></div>${spark(x.t)}</a>`};
+  const withC=REG.filter(x=>chg(x)!=null);
+  const up=withC.filter(x=>chg(x)>0).sort((a,b)=>chg(b)-chg(a)).slice(0,5),dn=withC.filter(x=>chg(x)<0).sort((a,b)=>chg(a)-chg(b)).slice(0,5);
+  const row=(t,col,l)=>l.length?`<div class="mk-rh"><h3><i style="background:${col}"></i>${t}</h3><span>${en?'Top 5':'Топ-5'}</span></div><div class="mk-row">${l.map(card).join('')}</div>`:'';
+  rows=row(en?'Rising today':'Растут сегодня','var(--up)',up)+row(en?'Falling today':'Падают сегодня','var(--dn)',dn);
+ }
+ $('mkr').innerHTML=rows;
+ $('mka').hidden=!(home&&ROWS);
+ if(home&&ROWS)$('mkab').textContent=(en?'All stocks (':'Все акции (')+REG.length+') →';
+ // сетка карточек: в разделе «Все акции» и в секторе
+ let L=home?[]:REG.filter(x=>MKV!=='s'||x.sector===secs[MKF]);
  L=L.slice().sort((a,b)=>MKS==='n'?String(a.name).localeCompare(String(b.name)):MKS==='u'?(chg(b)??-1e9)-(chg(a)??-1e9):(chg(a)??1e9)-(chg(b)??1e9));
  $('mkg').innerHTML=L.map(x=>{
   const q=QT[x.t],c=chg(x);
-  const lg=x.logo?`<img${x.logoShape==='round'?' class="round"':''} alt="" loading="lazy" src="${logoUrl(x)}">`:`<span class="mkl">${x.t[0]}</span>`;
   const px=q?'$'+q.c.toFixed(2):'';
-  const cs=c==null?'':(c>=0?'+':'−')+Math.abs(c).toFixed(2).replace('.',en?'.':',')+'%';
-  return `<a class="mkc" href="/${x.t}" data-t="${x.t}">${lg}<div class="mkb"><b>${x.name}</b><span>${x.t}${x.sector?' · '+sName(x):''}</span></div><div class="mkp"><b>${px}</b><span class="${c==null?'':c>=0?'pos':'neg'}">${cs}</span></div></a>`}).join('');
+  return `<a class="mkc" href="/${x.t}" data-t="${x.t}">${logo(x)}<div class="mkb"><b>${x.name}</b><span>${x.t}${x.sector?' · '+sName(x):''}</span></div><div class="mkp"><b>${px}</b><span class="${c==null?'':c>=0?'pos':'neg'}">${fmt(c)}</span></div></a>`}).join('');
 }
-$('mkf').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;MKF=+b.dataset.i;hmRender()});
+$('mkf').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.k;
+ if(k==='more'){MKO=!MKO;hmRender();return}
+ MKO=false;if(k==='h'){MKV=(REG.length>=6)?'h':'a';MKF=-1}else if(k&&k[0]==='s'){MKV='s';MKF=+k.slice(1)}hmRender()});
+document.addEventListener('click',e=>{if(MKO&&!e.target.closest('.mk-f-w')){MKO=false;hmRender()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&MKO){MKO=false;hmRender()}});
+$('mkbb').addEventListener('click',()=>{MKV='h';MKF=-1;hmRender()});
+$('mkab').addEventListener('click',()=>{MKV='a';MKF=-1;hmRender()});
 $('mks').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;MKS=b.dataset.s;hmRender()});
+$('mkr').addEventListener('click',e=>{const a=e.target.closest('a.rc');if(!a||e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;e.preventDefault();openStock(a.dataset.t)});
 $('mkg').addEventListener('click',e=>{const a=e.target.closest('a.mkc');if(!a||e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;e.preventDefault();openStock(a.dataset.t)});
 
 /* ===== Подсказки терминов: берутся из словаря акции (вкладка «Словарь»), только латинские термины ===== */
