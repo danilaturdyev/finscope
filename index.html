@@ -103,6 +103,7 @@ a{color:var(--ac)}.src{font-size:14px;padding:8px 0;border-top:1px solid var(--b
 .cp,.tg{border:0;border-radius:99px;padding:10px 16px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;background:var(--chip);color:var(--tx);display:inline-block}
 .tg{background:var(--tx);color:var(--bg)}
 .disc{font-size:12px;color:var(--mu);margin-top:28px}
+#chart{position:relative}.xtip{position:absolute;top:6px;left:0;z-index:5;pointer-events:none;padding:5px 12px;border-radius:99px;background:var(--card);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--bd);color:var(--tx);font:700 12px/1.3 Manrope,'Segoe UI',system-ui,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap;box-shadow:0 6px 20px var(--glow1)}
 </style>
 </head>
 <body>
@@ -310,7 +311,7 @@ function chart(){
   grid:{vertLines:{visible:false},horzLines:{color:bd}},
   rightPriceScale:{borderVisible:false,scaleMargins:{top:.12,bottom:.1}},
   timeScale:Object.assign({borderVisible:false,rightOffset:2},intr?{timeVisible:true,secondsVisible:false,tickMarkFormatter:tickLbl}:{}),
-  crosshair:{mode:0,vertLine:{color:mu,labelBackgroundColor:tx},horzLine:{color:mu,labelBackgroundColor:tx}},
+  crosshair:{mode:1,vertLine:{color:mu,width:1,style:2,labelVisible:false},horzLine:{color:mu,width:1,style:2,labelBackgroundColor:col}},
   localization:Object.assign({locale:LOC,priceFormatter:p=>'$'+p.toFixed(2)},intr?{timeFormatter:t=>whenLbl(t)}:{})});
  const ser=CH.addLineSeries({color:col,lineWidth:2,crosshairMarkerRadius:4,priceLineVisible:false,lastValueVisible:true});
  ser.setData(pts.map(p=>({time:p[0],value:p[1]})));
@@ -322,16 +323,19 @@ function chart(){
  };
  show(pts.length-1);
  const el=$('chart');
+ el.querySelectorAll('.xtip').forEach(n=>n.remove());
+ const tip=document.createElement('div');tip.className='xtip';tip.hidden=true;el.appendChild(tip);
+ const tipAt=(x,i)=>{tip.hidden=false;tip.textContent=typeof pts[i][0]==='number'?whenLbl(pts[i][0]):fshort(Date.parse(pts[i][0]+'T00:00:00Z'));const w=tip.offsetWidth,W=el.clientWidth;tip.style.left=Math.max(4,Math.min(W-w-4,x-w/2))+'px'};
  const tix=e=>{const r=el.getBoundingClientRect();const i=Math.round(CH.timeScale().coordinateToLogical(e.clientX-r.left));return Math.max(0,Math.min(pts.length-1,isFinite(i)?i:pts.length-1))};
- const tmove=e=>{if(e.pointerType!=='touch')return;const i=tix(e);LIVE.hover=true;show(i);try{CH.setCrosshairPosition(pts[i][1],pts[i][0],ser)}catch(x){}};
- const tend=e=>{if(e.pointerType!=='touch')return;LIVE.hover=false;try{CH.clearCrosshairPosition()}catch(x){}show(pts.length-1)};
+ const tmove=e=>{if(e.pointerType!=='touch')return;const i=tix(e);LIVE.hover=true;show(i);tipAt(e.clientX-el.getBoundingClientRect().left,i);try{CH.setCrosshairPosition(pts[i][1],pts[i][0],ser)}catch(x){}};
+ const tend=e=>{if(e.pointerType!=='touch')return;LIVE.hover=false;tip.hidden=true;try{CH.clearCrosshairPosition()}catch(x){}show(pts.length-1)};
  el.onpointerdown=tmove;el.onpointermove=e=>{if(e.pressure>0||e.buttons)tmove(e)};el.onpointerup=tend;el.onpointercancel=tend;
  CH.subscribeCrosshairMove(p=>{
   const v=p.seriesData&&p.seriesData.get(ser);
-  if(!p.time||!v){LIVE.hover=false;show(pts.length-1);return}
+  if(!p.time||!v){LIVE.hover=false;tip.hidden=true;show(pts.length-1);return}
   LIVE.hover=true;
   const i=intr?pts.findIndex(x=>x[0]===p.time):pts.findIndex(x=>Math.abs(x[1]-v.value)<1e-9);
-  show(i<0?pts.length-1:i);
+  show(i<0?pts.length-1:i);if(i>=0&&p.point)tipAt(p.point.x,i);
  });
 }
 function pillars(){
