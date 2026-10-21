@@ -685,13 +685,13 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('botp').hidden&&
 
 
 /* ===== Главная: карточки акций, фильтр по отрасли, сортировка ===== */
-let QT={},QLIVE=0,MKF=-1,MKS='n';
+let QT={},QLIVE=0,QCL=0,MKF=-1,MKS='n';
 async function loadQuotes(){try{const q=await getJSON(DATA_BASE+'quotes.json?'+Math.floor(Date.now()/120000));QT=q&&typeof q==='object'?q:{}}catch(e){QT={}}}
 async function liveQuotes(){
  try{
   const r=await fetch('/api/quotes');if(!r.ok)return;const j=await r.json();
-  if(j&&j.live&&j.q){Object.keys(j.q).forEach(t=>{QT[t]=Object.assign({},QT[t],j.q[t])});QLIVE=j.at||Date.now();hmRender()}
-  else if(QLIVE){QLIVE=0;await loadQuotes();hmRender()}
+  if(j&&j.live&&j.q){Object.keys(j.q).forEach(t=>{QT[t]=Object.assign({},QT[t],j.q[t])});QLIVE=j.at||Date.now();QCL=j.close?1:0;hmRender()}
+  else if(QLIVE){QLIVE=0;QCL=0;await loadQuotes();hmRender()}
  }catch(e){}
 }
 setInterval(()=>{if(!document.hidden&&!$('home').hidden)liveQuotes()},300000);
@@ -702,7 +702,7 @@ function hmRender(){
  if(MKF>=secs.length)MKF=-1;
  $('mkf').hidden=secs.length<2;
  $('mkf').innerHTML=secs.length<2?'':[[-1,en?'All':'Все']].concat(secs.map((s,i)=>[i,sName(REG.find(x=>x.sector===s))])).map(([i,l])=>`<button type="button" data-i="${i}" class="${i===MKF?'on':''}" aria-pressed="${i===MKF}">${l}</button>`).join('');
-const nt=$('mkn');if(nt){const en0=LANG==='en';nt.textContent=QLIVE?(en0?'Prices updated at ':'Цены обновлены в ')+new Date(QLIVE).toLocaleTimeString(en0?'en-GB':'ru-RU',{hour:'2-digit',minute:'2-digit'})+(en0?', with a delay of a few minutes.':', с задержкой в несколько минут.'):(en0?'Prices at the close of the last trading session.':'Цены на закрытие последней торговой сессии.')}
+const nt=$('mkn');if(nt){const en0=LANG==='en';nt.textContent=QLIVE&&!QCL?(en0?'Prices updated at ':'Цены обновлены в ')+new Date(QLIVE).toLocaleTimeString(en0?'en-GB':'ru-RU',{hour:'2-digit',minute:'2-digit'})+(en0?', with a delay of a few minutes.':', с задержкой в несколько минут.'):(en0?'Prices at the close of the last trading session.':'Цены на закрытие последней торговой сессии.')}
  document.querySelectorAll('#mks button').forEach(b=>{const on=b.dataset.s===MKS;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
  const chg=x=>{const q=QT[x.t];return q&&q.p?(q.c-q.p)/q.p*100:null};
  let L=REG.filter(x=>MKF<0||x.sector===secs[MKF]);

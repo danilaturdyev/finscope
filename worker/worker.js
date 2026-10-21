@@ -221,8 +221,10 @@ async function quotes(u, env, ctx) {
   const H = Object.assign({ 'cache-control': 'public, max-age=60' }, JSONH);
   const e = etParts(Date.now() / 1000);
   const mins = e.h * 60 + e.m, open = !['Sat', 'Sun'].includes(e.wd) && mins >= 570 && mins < 960; // основная сессия 9:30-16:00 по Нью-Йорку
-  if (!open || !env.TD_KEY) return new Response(JSON.stringify({ live: false }), { headers: H });
-  const cache = caches.default, key = new Request(u.origin + '/__fresh/quotes');
+  // После закрытия (в будни с 16:15 по Нью-Йорку) один раз берём итоговые цены дня и держим до утра: так главная совпадает со страницей акции, пока ежедневная задача не обновит quotes.json.
+  const after = !['Sat', 'Sun'].includes(e.wd) && mins >= 975;
+  if ((!open && !after) || !env.TD_KEY) return new Response(JSON.stringify({ live: false }), { headers: H });
+  const cache = caches.default, key = new Request(u.origin + '/__fresh/quotes' + (after ? '_close_' + e.date : ''));
   const hit = await cache.match(key); if (hit) return hit;
   let reg = []; try { const r = await fetch(BASE + 'data/stocks.json', { cf: { cacheTtl: 300, cacheEverything: true } }); if (r.ok) reg = await r.json(); } catch (x) {}
   const list = (Array.isArray(reg) ? reg : []).slice(0, 8);
@@ -236,8 +238,8 @@ async function quotes(u, env, ctx) {
   }));
   const q = Object.fromEntries(res.filter(Boolean));
   const ok = Object.keys(q).length > 0;
-  const body = JSON.stringify({ live: ok, q, at: Date.now() });
-  const r = new Response(body, { headers: Object.assign({ 'cache-control': 'public, max-age=' + (ok ? 300 : 60) }, JSONH) });
+  const body = JSON.stringify({ live: ok, q, at: Date.now(), close: after });
+  const r = new Response(body, { headers: Object.assign({ 'cache-control': 'public, max-age=' + (ok ? (after ? 1800 : 300) : 60) }, JSONH) });
   ctx.waitUntil(cache.put(key, r.clone()));
   return r;
 }
