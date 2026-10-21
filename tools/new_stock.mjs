@@ -50,4 +50,4 @@ if (flags.includes('--round')) row.logoShape = 'round';
 if (mic) row.td = { symbol: t, mic }; else row.td = { symbol: t };
 reg.push(row);
 fs.writeFileSync(D + 'stocks.json', JSON.stringify(reg));
-console.log('Создано: data/' + t + '.json и запись в data/stocks.json.\nДальше:\n 1) положите логотип в data/logos/' + t + '.png и допишите "logo":"logos/' + t + '.png" в stocks.json;\n 2) заполните все TODO и поле en (переводы);\n 3) node tools/build_quotes.mjs; node tools/og.mjs ' + t + '; node tools/validate.mjs');
+console.log('Создано: data/' + t + '.json и запись в data/stocks.json.\nДальше:\n 1) положите логотип в data/logos/' + t + '.png и допишите "logo":"logos/' + t + '.png" в stocks.json И в data/' + t + '.json (на странице акции логотип берётся из её файла);\n 2) заполните все TODO и поле en (переводы);\n 3) node tools/build_quotes.mjs; node tools/og.mjs ' + t + '; node tools/validate.mjs');
