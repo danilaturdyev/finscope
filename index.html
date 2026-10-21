@@ -632,7 +632,7 @@ applyLang();
 
 /* ===== Поделиться и счётчик просмотров ===== */
 function toast(t){let e=document.getElementById('toast');if(!e){e=document.createElement('div');e.id='toast';e.className='toast';e.setAttribute('role','status');document.body.append(e)}e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>{e.hidden=true},2200)}
-function shareUrl(){return (location.protocol.startsWith('http')?location.origin:'https://finscope.turdievdanila234.workers.dev')+'/'+(CUR?CUR.t:'')}
+function shareUrl(){return (location.protocol.startsWith('http')?location.origin:'https://finscope.uk')+'/'+(CUR?CUR.t:'')}
 $('shr').addEventListener('click',async()=>{
  if(!CUR)return;const url=shareUrl(),title=CUR.name+' ('+CUR.t+') · FinScope',text=CUR.verdict&&CUR.verdict.title?(LANG==='en'?trTxt(CUR.verdict.title):CUR.verdict.title):title;
  try{if(navigator.share){await navigator.share({title,text,url});return}}catch(e){if(e&&e.name==='AbortError')return}

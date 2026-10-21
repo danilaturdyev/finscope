@@ -1,6 +1,7 @@
 // FinScope — Cloudflare Worker: отдаёт сайт и живые цены (Twelve Data). Ключ хранится в секрете TD_KEY, в код его не вставляйте.
 // Сайт и данные акций лежат в GitHub (index.html и папка data/). Воркер отдаёт страницу и живые цены для любой акции из data/stocks.json.
 const BASE = 'https://raw.githubusercontent.com/danilaturdyev/finscope/main/';
+const SITE = 'https://finscope.uk'; // основной адрес сайта: canonical, превью, карта сайта
 const FALLBACK = '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FinScope</title><body style="font-family:system-ui;padding:40px;max-width:520px;margin:auto"><h1>FinScope</h1><p>Не получилось загрузить сайт. Обновите страницу через минуту.</p>';
 async function page() {
   try {
@@ -112,10 +113,10 @@ async function share(u, T, clean) {
   const title = (S ? S.name + ' (' + T + ')' : T) + ' · FinScope';
   const desc = S && S.verdict ? S.verdict.title + '. ' + String(S.verdict.text || '').slice(0, 160) : 'Акции понятным языком';
   const img = BASE + 'data/og/' + T + '.png';
-  const meta = '<meta property="og:type" content="website"><meta property="og:site_name" content="FinScope"><meta property="og:title" content="' + esc(title) + '"><meta property="og:description" content="' + esc(desc) + '"><meta property="og:url" content="' + esc(u.origin + (clean ? '/' : '/s/') + T) + '"><meta property="og:image" content="' + esc(img) + '"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="' + esc(title) + '"><meta name="twitter:description" content="' + esc(desc) + '"><meta name="twitter:image" content="' + esc(img) + '">';
+  const meta = '<meta property="og:type" content="website"><meta property="og:site_name" content="FinScope"><meta property="og:title" content="' + esc(title) + '"><meta property="og:description" content="' + esc(desc) + '"><meta property="og:url" content="' + esc(SITE + (clean ? '/' : '/s/') + T) + '"><meta property="og:image" content="' + esc(img) + '"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="' + esc(title) + '"><meta name="twitter:description" content="' + esc(desc) + '"><meta name="twitter:image" content="' + esc(img) + '">';
   const go = '<script>history.replaceState(null,"","/#/' + T + '")</script>';
   html = html.replace(/<title>[\s\S]*?<\/title>/, '<title>' + esc(title) + '</title>');
-  const seo = '<link rel="canonical" href="' + esc(u.origin + '/' + T) + '"><meta name="description" content="' + esc(desc) + '">';
+  const seo = '<link rel="canonical" href="' + esc(SITE + '/' + T) + '"><meta name="description" content="' + esc(desc) + '">';
   html = html.replace(/<meta name="description"[^>]*>/, '');
   html = html.replace('<head>', '<head>' + seo + meta + go);
   if (S) html = html.replace(/<body[^>]*>/, m => m + '<noscript><h1>' + esc(S.name) + ' (' + esc(T) + ')</h1><p>' + esc(S.sub || '') + '</p>' + (S.verdict ? '<h2>' + esc(S.verdict.title) + '</h2><p>' + esc(S.verdict.text) + '</p>' : '') + '<p>FinScope: разбор отчётности, новостей, опционов и сценариев цены. Не является инвестиционной рекомендацией.</p></noscript>');
@@ -218,19 +219,20 @@ async function chat(req, env, ctx) {
 async function sitemap(u) {
   let l = []; try { const r = await fetch(BASE + 'data/stocks.json', { cf: { cacheTtl: 300, cacheEverything: true } }); if (r.ok) l = await r.json(); } catch (e) {}
   const urls = ['/'].concat((Array.isArray(l) ? l : []).map(x => '/' + x.t));
-  const xml = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + urls.map(p => '<url><loc>' + esc(u.origin + p) + '</loc><changefreq>daily</changefreq></url>').join('') + '</urlset>';
+  const xml = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + urls.map(p => '<url><loc>' + esc(SITE + p) + '</loc><changefreq>daily</changefreq></url>').join('') + '</urlset>';
   return new Response(xml, { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'public, max-age=3600' } });
 }
 export default {
   async fetch(req, env, ctx) {
     const u = new URL(req.url);
+    if (u.hostname === 'www.finscope.uk') return Response.redirect(SITE + u.pathname + u.search, 301);
     if (u.pathname === '/api/series') return series(u, env, ctx);
     if (u.pathname === '/api/chat') return chat(req, env, ctx);
     if (u.pathname === '/api/hit') return hit(u, env);
     if (u.pathname === '/stats') return stats(u, env);
     if (u.pathname.startsWith('/s/')) return share(u, u.pathname.slice(3).toUpperCase());
     if (u.pathname === '/sitemap.xml') return sitemap(u);
-    if (u.pathname === '/robots.txt') return new Response('User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /stats\nSitemap: ' + u.origin + '/sitemap.xml\n', { headers: { 'content-type': 'text/plain; charset=utf-8' } });
+    if (u.pathname === '/robots.txt') return new Response('User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /stats\nSitemap: ' + SITE + '/sitemap.xml\n', { headers: { 'content-type': 'text/plain; charset=utf-8' } });
     if (/^\/[A-Za-z][A-Za-z0-9.\-]{0,9}$/.test(u.pathname)) { const r = await share(u, u.pathname.slice(1).toUpperCase(), true); if (r) return r; }
     if (u.pathname === '/' || u.pathname === '/index.html')
       return new Response(await page(), { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=60, stale-while-revalidate=600' } });

@@ -47,4 +47,4 @@
 `wrangler.jsonc` в корне: подключите репозиторий в Cloudflare (finscope -> Settings -> Builds -> Connect), команда деплоя `npx wrangler deploy`. После этого каждый коммит в `main` сам обновляет `worker/worker.js`. Привязки (AI, KV STATS) должны быть описаны в `wrangler.jsonc`, иначе деплой их уберёт.
 
 ## Страницы сайта
-`/#/about` (О нас), `/#/legal` (Отказ от ответственности и источники), `/ТИКЕР` (акция), `/sitemap.xml`, `/robots.txt`.
+`/#/about` (О нас), `/#/legal` (Отказ от ответственности и источники), `/ТИКЕР` (акция), `/sitemap.xml`, `/robots.txt`. Основной адрес сайта: https://finscope.uk (константа `SITE` в `worker/worker.js`), `www` перенаправляется на него.
