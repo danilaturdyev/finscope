@@ -192,7 +192,13 @@ async function chat(req, env, ctx) {
   const hist = Array.isArray(b.h) ? b.h.slice(-6).filter(m => m && (m.r === 'u' || m.r === 'a') && typeof m.c === 'string').map(m => ({ role: m.r === 'u' ? 'user' : 'assistant', content: m.c.slice(0, 600) })) : [];
   try {
     const context = await botContext(T);
-    const out = await env.AI.run(env.CHAT_MODEL || BOT_MODEL, { messages: [{ role: 'system', content: BOT_SYS + '\n\nКОНТЕКСТ:\n' + context }, ...hist, { role: 'user', content: q }], max_tokens: 420, temperature: 0.3 });
+    const msgs = [{ role: 'system', content: BOT_SYS + '\n\nКОНТЕКСТ:\n' + context }, ...hist, { role: 'user', content: q }];
+    let out, lastErr;
+    for (const mdl of (env.CHAT_MODEL ? [env.CHAT_MODEL] : BOT_MODELS)) {
+      try { out = await env.AI.run(mdl, { messages: msgs, max_tokens: 420, temperature: 0.3 }); if (out) break; }
+      catch (e) { lastErr = e; if (/limit|quota|neuron|capacity/i.test(String(e && e.message || e))) break; }
+    }
+    if (!out) throw lastErr || new Error('empty');
     const a = String((out && (out.response || (out.result && out.result.response))) || '').trim();
     if (!a) throw new Error('empty');
     return new Response(JSON.stringify({ a: a.slice(0, 2000) }), { headers: H });
