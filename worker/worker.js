@@ -126,7 +126,7 @@ async function share(u, T, clean) {
 async function hit(u, env) {
   const ok = new Response(null, { status: 204, headers: { 'access-control-allow-origin': '*' } });
   const p = (u.searchParams.get('p') || '').toUpperCase();
-  if (!env.STATS || !(p === 'HOME' || (await allowed(p)))) return ok;
+  if (!env.STATS || !(p === 'HOME' || p === 'VISIT' || (await allowed(p)))) return ok;
   try {
     const day = new Date().toISOString().slice(0, 10), key = 'v:' + day + ':' + p;
     const n = parseInt((await env.STATS.get(key)) || '0', 10) || 0;
@@ -143,9 +143,9 @@ async function stats(u, env) {
   const list = await env.STATS.list({ prefix: 'v:' });
   const cnt = {}, pages = new Set();
   await Promise.all(list.keys.map(async k => { const [, d, p] = k.name.split(':'); if (!days.includes(d)) return; const n = parseInt((await env.STATS.get(k.name)) || '0', 10) || 0; (cnt[d] = cnt[d] || {})[p] = n; pages.add(p); }));
-  const P = [...pages].sort();
-  const rows = days.map(d => '<tr><td>' + d + '</td>' + P.map(p => '<td>' + ((cnt[d] || {})[p] || 0) + '</td>').join('') + '<td><b>' + P.reduce((a, p) => a + ((cnt[d] || {})[p] || 0), 0) + '</b></td></tr>').join('');
-  const html = '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FinScope: статистика</title><body style="font-family:system-ui;padding:20px;max-width:760px;margin:auto"><h1>Просмотры за 14 дней</h1><p>Считаются уникальные открытия страницы за сессию, без cookie и личных данных.</p><div style="overflow:auto"><table border="1" cellpadding="8" style="border-collapse:collapse"><tr><th>Дата</th>' + P.map(p => '<th>' + esc(p) + '</th>').join('') + '<th>Всего</th></tr>' + rows + '</table></div>';
+  const P = [...pages].filter(p => p !== 'VISIT').sort(), V = pages.has('VISIT');
+  const rows = days.map(d => '<tr><td>' + d + '</td>' + (V ? '<td><b>' + ((cnt[d] || {}).VISIT || 0) + '</b></td>' : '') + P.map(p => '<td>' + ((cnt[d] || {})[p] || 0) + '</td>').join('') + '<td><b>' + P.reduce((a, p) => a + ((cnt[d] || {})[p] || 0), 0) + '</b></td></tr>').join('');
+  const html = '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FinScope: статистика</title><body style="font-family:system-ui;padding:20px;max-width:760px;margin:auto"><h1>Просмотры за 14 дней</h1><p>«Заходы на сайт» — сколько сессий (вкладок) началось: первая страница любой сессии, главная или акция. Остальные столбцы — открытия страниц, каждая считается раз за сессию. Без cookie и личных данных.</p><div style="overflow:auto"><table border="1" cellpadding="8" style="border-collapse:collapse"><tr><th>Дата</th>' + (V ? '<th>Заходы на сайт</th>' : '') + P.map(p => '<th>' + esc(p) + '</th>').join('') + '<th>Просмотров страниц</th></tr>' + rows + '</table></div>';
   return new Response(html, { headers: H });
 }
 

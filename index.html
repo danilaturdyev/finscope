@@ -645,7 +645,8 @@ $('shr').addEventListener('click',async()=>{
  try{if(navigator.share){await navigator.share({title,text,url});return}}catch(e){if(e&&e.name==='AbortError')return}
  try{await navigator.clipboard.writeText(url);toast(LANG==='en'?'Link copied':'Ссылка скопирована')}catch(e){const i=document.createElement('input');i.value=url;document.body.append(i);i.select();try{document.execCommand('copy');toast(LANG==='en'?'Link copied':'Ссылка скопирована')}catch(_){}i.remove()}
 });
-function hit(p){try{const k='fs_hit_'+p;if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}catch(e){}
+function ping(p){try{if(location.protocol.startsWith('http')){const u='/api/hit?p='+encodeURIComponent(p);if(!(navigator.sendBeacon&&navigator.sendBeacon(u)))fetch(u,{method:'POST',keepalive:true}).catch(()=>{})}}catch(e){}}
+function hit(p){try{const k='fs_hit_'+p;if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');if(!sessionStorage.getItem('fs_visit')){sessionStorage.setItem('fs_visit','1');ping('VISIT')}}catch(e){}
  try{if(location.protocol.startsWith('http')){const u='/api/hit?p='+encodeURIComponent(p);if(!(navigator.sendBeacon&&navigator.sendBeacon(u)))fetch(u,{method:'POST',keepalive:true}).catch(()=>{})}}catch(e){}}
 
 
