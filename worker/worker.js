@@ -244,12 +244,20 @@ async function quotes(u, env, ctx) {
   return r;
 }
 // Значки сайта лежат в data/ (GitHub); отдаём их по стандартным адресам, чтобы их находили браузеры и Google.
-const ICONS = { '/favicon.svg': ['icon.svg', 'image/svg+xml'], '/favicon.ico': ['icon-48.png', 'image/png'], '/apple-touch-icon.png': ['icon-180.png', 'image/png'], '/icon-512.png': ['icon-512.png', 'image/png'] };
+const ICONS = { '/favicon.svg': ['icon.svg', 'image/svg+xml'], '/favicon.ico': ['icon-48.png', 'image/png'], '/apple-touch-icon.png': ['icon-180.png', 'image/png'], '/icon-512.png': ['icon-512.png', 'image/png'], '/icon-192.png': ['icon-192.png', 'image/png'], '/icon-maskable.png': ['icon-maskable.png', 'image/png'] };
 async function icon(p) {
   const [f, ct] = ICONS[p];
   try { const r = await fetch(BASE + 'data/' + f, { cf: { cacheTtl: 86400, cacheEverything: true } }); if (r.ok) return new Response(r.body, { headers: { 'content-type': ct, 'cache-control': 'public, max-age=86400' } }); } catch (e) {}
   return new Response('Not found', { status: 404 });
 }
+const MANIFEST = JSON.stringify({ name: 'FinScope', short_name: 'FinScope', description: 'Акции понятным языком: отчёты SEC, цены, опционы и новости.', lang: 'ru', start_url: '/?utm_source=pwa', scope: '/', display: 'standalone', background_color: '#f1f3fa', theme_color: '#5b5bff', icons: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' }, { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' }, { src: '/icon-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }] });
+// Сервис-воркер: сеть в приоритете (цены всегда свежие), офлайн показывает последнюю сохранённую страницу.
+const SW = `const C='fs-v1';
+self.addEventListener('install',e=>self.skipWaiting());
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',e=>{const r=e.request,u=new URL(r.url);
+ if(r.method!=='GET'||u.origin!==location.origin||u.pathname.startsWith('/api/')||u.pathname==='/stats')return;
+ if(r.mode==='navigate'){e.respondWith(fetch(r).then(x=>{if(x.ok){const c=x.clone();caches.open(C).then(h=>h.put('/',c))}return x}).catch(()=>caches.match('/').then(x=>x||new Response('Нет сети. Откройте FinScope, когда интернет появится. / Offline.',{status:503,headers:{'content-type':'text/plain; charset=utf-8'}}))))}});`;
 async function sitemap(u) {
   let l = []; try { const r = await fetch(BASE + 'data/stocks.json', { cf: { cacheTtl: 300, cacheEverything: true } }); if (r.ok) l = await r.json(); } catch (e) {}
   const urls = ['/'].concat((Array.isArray(l) ? l : []).map(x => '/' + x.t));
@@ -267,6 +275,8 @@ export default {
     if (u.pathname === '/stats') return stats(u, env);
     if (u.pathname.startsWith('/s/')) return share(u, u.pathname.slice(3).toUpperCase());
     if (ICONS[u.pathname]) return icon(u.pathname);
+    if (u.pathname === '/manifest.webmanifest') return new Response(MANIFEST, { headers: { 'content-type': 'application/manifest+json; charset=utf-8', 'cache-control': 'public, max-age=3600' } });
+    if (u.pathname === '/sw.js') return new Response(SW, { headers: { 'content-type': 'application/javascript; charset=utf-8', 'cache-control': 'no-cache' } });
     if (u.pathname === '/sitemap.xml') return sitemap(u);
     if (u.pathname === '/robots.txt') return new Response('User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /stats\nSitemap: ' + SITE + '/sitemap.xml\n', { headers: { 'content-type': 'text/plain; charset=utf-8' } });
     if (/^\/[A-Za-z][A-Za-z0-9.\-]{0,9}$/.test(u.pathname)) { const r = await share(u, u.pathname.slice(1).toUpperCase(), true); if (r) return r; }
