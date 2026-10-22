@@ -28,6 +28,7 @@ async function tdExtra(t) {
   return { sym: t, mic: '' };
 }
 let noPrepost = 0;
+const micOk = {};
 const CFG = [
   { iv: '1min',  n: 1000, days: 1,  ttl: 60  },   // 1Д: минутные цены, пре- и пост-маркет
   { iv: '30min', n: 500,  days: 7,  ttl: 600 },   // 1Н
@@ -66,6 +67,7 @@ async function build(i, env, SYMBOL, MIC, pcNeeded) {
       else throw e;
     }
   }
+  if (ts.meta && ts.meta.currency && ts.meta.currency !== 'USD') throw new Error('другая валюта: ' + ts.meta.currency);
   let pts = (ts.values || []).map(v => [Math.floor(Date.parse(v.datetime.replace(' ', 'T') + 'Z') / 1000), parseFloat(v.close)]).filter(p => isFinite(p[0]) && isFinite(p[1]));
   if (pts.length < 2) throw new Error('нет данных');
   const last = pts[pts.length - 1][0];
@@ -90,7 +92,11 @@ async function series(u, env, ctx) {
   if (hit) return hit;
   try {
     const ex = await tdExtra(T);
-    const data = await build(i, env, ex.sym, ex.mic, u.searchParams.get('q') === '1');
+    // Если биржа из stocks.json не отдаёт данные (например, акция торгуется на другой бирже в источнике), пробуем соседние. Валюта должна быть USD.
+    const mics = ex.mic ? [micOk[T], ex.mic, '&mic_code=XNAS', '&mic_code=XNYS', ''].filter((m, k, a) => m !== undefined && a.indexOf(m) === k) : [''];
+    let data = null, lastErr = null;
+    for (const m of mics) { try { data = await build(i, env, ex.sym, m, u.searchParams.get('q') === '1'); micOk[T] = m; break; } catch (e) { lastErr = e; } }
+    if (!data) throw lastErr;
     data.symbol = T;
     const body = JSON.stringify(data);
     const mk = age => new Response(body, { headers: Object.assign({ 'cache-control': 'public, max-age=' + age }, JSONH) });
@@ -231,7 +237,11 @@ async function quotes(u, env, ctx) {
   const res = await Promise.all(list.map(async x => {
     try {
       const ex = await tdExtra(x.t);
-      const q = await td('quote?symbol=' + encodeURIComponent(ex.sym) + (ex.mic || '') + '&format=JSON', env);
+      let q = null;
+      for (const m of ex.mic ? [micOk[x.t], ex.mic, '&mic_code=XNAS', ''].filter((m, k, a) => m !== undefined && a.indexOf(m) === k) : ['']) {
+        try { const r = await td('quote?symbol=' + encodeURIComponent(ex.sym) + m + '&format=JSON', env); if (!r.currency || r.currency === 'USD') { q = r; micOk[x.t] = m; break; } } catch (e2) {}
+      }
+      if (!q) return null;
       const c = parseFloat(q.close), p = parseFloat(q.previous_close);
       return isFinite(c) && isFinite(p) && p > 0 ? [x.t, { c, p }] : null;
     } catch (x2) { return null; }
