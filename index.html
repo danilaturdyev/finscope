@@ -456,7 +456,7 @@ function chart(){
  if(RNG<=2&&!LIVE.ser[RNG]&&!LIVE.gave){if(CH){CH.remove();CH=null}$('chart').innerHTML='<div class="d" style="padding:48px 0;text-align:center">Загружаю живые цены…</div>';$('ro').innerHTML='';return}
  const L=RNG<=2?LIVE.ser[RNG]:null,intr=!!(L&&L.length>1),pts=intr?L:withLive(PTS.slice(baseIdx(RNG<=2?30:RANGES[RNG][1]))),b0=(intr&&RNG===0&&LIVE.prev)?LIVE.prev:pts[0][1],last=pts[pts.length-1][1],ch=(last/b0-1)*100,up=ch>=0,col=cssv(up?'--up':'--dn');
  {const lv=lvEl();if(RNG<=2&&!intr)lv.textContent='Живые цены сейчас недоступны, показаны дневные цены за месяц'}
- const head=i=>{const v=pts[i][1],dl=v-b0,r=(v/b0-1)*100,u=dl>=0,c=$('chg');c.className='chg '+(u?'up':'dn');c.textContent=(u?'▲ ':'▼ ')+pct(r)+' ('+(u?'+':'−')+'$'+Math.abs(dl).toFixed(2)+') '+fromLbl(pts[0][0],intr&&RNG===0&&LIVE.prev);$('price').textContent='$'+v.toFixed(2)};
+ const dayFb=RNG===0&&!intr&&pts.length>1;const head=i=>{const v=pts[i][1],dayNow=dayFb&&i===pts.length-1,bb=dayNow?pts[pts.length-2][1]:b0,dl=v-bb,r=(v/bb-1)*100,u=dl>=0,c=$('chg');c.className='chg '+(u?'up':'dn');c.textContent=(u?'▲ ':'▼ ')+pct(r)+' ('+(u?'+':'−')+'$'+Math.abs(dl).toFixed(2)+') '+fromLbl(pts[0][0],(intr&&RNG===0&&LIVE.prev)||dayNow);$('price').textContent='$'+v.toFixed(2)};
  head(pts.length-1);
  if(CH){CH.remove();CH=null}
  $('chart').textContent='';
@@ -525,8 +525,8 @@ function whenLbl(t){
  return d.toLocaleDateString(LOC,{day:'numeric',month:'short'})+', '+d.toLocaleTimeString(LOC,{hour:'2-digit',minute:'2-digit'})+(m<570?' · пре-маркет':m>=960?' · пост-маркет':'');
 }
 function fromLbl(t,prev){
+ if(prev)return LANG==='en'?'since the previous close':'с закрытия предыдущего дня';
  if(typeof t!=='number')return (LANG==='en'?'since ':'с ')+fshort(Date.parse(t+'T00:00:00Z'));
- if(prev)return 'с закрытия предыдущего дня';
  return (LANG==='en'?'since ':'с ')+new Date(t*1000).toLocaleDateString(LOC,{day:'numeric',month:'short'});
 }
 function tickLbl(t,ty){const d=new Date(t*1000);return ty>=3?d.toLocaleTimeString(LOC,{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString(LOC,{day:'numeric',month:'short'})}
