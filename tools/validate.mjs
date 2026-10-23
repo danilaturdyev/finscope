@@ -113,6 +113,26 @@ try {
     if (!q[r.t] || !last || q[r.t].c !== +last[4] || q[r.t].d !== last[0]) err('data/quotes.json', r.t + ': устарел, запустите node tools/build_quotes.mjs');
   }
 } catch (e) { err('data/quotes.json', 'нет файла или он повреждён, запустите node tools/build_quotes.mjs'); }
+// новости для баннера на главной (data/news.json), обновляются ежедневно
+try {
+  const n = read('data/news.json');
+  const L = n && n.items;
+  if (!Array.isArray(L) || L.length < 3 || L.length > 10) err('data/news.json', 'нужно от 3 до 10 новостей в items');
+  else {
+    if (!ISO.test(n.updated || '')) err('data/news.json', 'updated должен быть датой');
+    L.forEach((x, i) => {
+      const f = 'data/news.json[' + i + ']';
+      if (!x.t || !x.s || !x.src) err(f, 'нужны t, s, src');
+      if (!/^https:\/\//.test(x.u || '')) err(f, 'u должен быть ссылкой https');
+      if (!ISO.test(x.d || '')) err(f, 'd должен быть датой');
+      if (!x.en || !x.en.t || !x.en.s) err(f, 'нужен перевод en.t и en.s');
+      if (x.s && x.s.length > 260) warns.push(f + ': описание длиннее 260 знаков');
+      if (x.en && /[А-Яа-яЁё]/.test((x.en.t || '') + (x.en.s || ''))) err(f, 'в en есть русские буквы');
+    });
+    const age = (Date.now() - Date.parse(n.updated + 'T12:00:00Z')) / 864e5;
+    if (age > 3) warns.push('data/news.json: новости не обновлялись ' + Math.round(age) + ' дн.');
+  }
+} catch (e) { err('data/news.json', 'нет файла или он повреждён'); }
 warns.forEach(w => console.log('ВНИМАНИЕ', w));
 if (errs.length) { console.log('ОШИБКИ:\n' + errs.map(e => ' - ' + e).join('\n')); process.exit(1); }
 console.log('OK: данные в порядке (' + (reg ? reg.length : 0) + ' акц.)');

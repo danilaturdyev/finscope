@@ -275,9 +275,27 @@ h3{font-size:20px}
 .hchip.c1{left:-28px;top:16%}.hchip.c2{right:-24px;top:46%}.hchip.c3{left:6%;bottom:8%}
 .rc{flex:1 0 212px}
 }
-@media (max-width:1099px){.hart{display:none}}
+@media (min-width:1100px){}
 @media (min-width:1700px){body:has(#home:not([hidden])) main{max-width:1600px}body:has(#home:not([hidden])) .cover>.hart{max-width:540px}body:has(#home:not([hidden])) .cover h1{font-size:96px!important;max-width:none}}
 @media (min-width:1500px){main{max-width:1360px}.cover h1{font-size:88px!important}}
+
+/* ===== Баннер новостей ===== */
+.ns{position:absolute;inset:0;border-radius:inherit;padding:8% 8% 14%;display:flex;flex-direction:column;justify-content:flex-end;gap:12px;color:#fff;opacity:0;visibility:hidden;transition:opacity .5s,visibility .5s;z-index:1}
+.ns.on{opacity:1;visibility:visible}
+.ns .nk{position:absolute;top:8%;left:8%;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.2)}
+.ns .ni{position:absolute;top:6%;right:7%;width:34%;opacity:.22}.ns .ni svg{display:block;width:100%;height:auto}
+.ns h3{margin:0;font-family:"Manrope","Segoe UI",system-ui,sans-serif;font-weight:800;font-size:clamp(22px,2.1vw,32px);line-height:1.12;letter-spacing:-.02em;text-wrap:balance}
+.ns p{margin:0;font-size:clamp(14px,1.05vw,16.5px);line-height:1.45;opacity:.92}
+.ns .nf{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;opacity:.9;margin-top:4px}.ns .nf a{color:#fff;font-weight:800;text-decoration:none;border-bottom:2px solid rgba(255,255,255,.55)}.ns .nf a:hover{border-bottom-color:#fff}
+.nar{position:absolute;top:50%;z-index:4;width:44px;height:44px;margin-top:-22px;border:0;border-radius:50%;background:rgba(10,12,18,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;display:grid;place-items:center;cursor:pointer;opacity:0;transition:opacity .2s,background .2s}.nar:hover{background:rgba(10,12,18,.7)}.nar.pv{left:12px}.nar.nx{right:12px}
+.hart:hover .nar,.hart:focus-within .nar{opacity:1}
+@media (hover:none){.nar{opacity:.85;width:38px;height:38px;margin-top:-19px}}
+.ndots{position:absolute;left:0;right:0;bottom:5%;z-index:4;display:flex;justify-content:center;gap:7px}.ndots button{width:8px;height:8px;padding:0;border:0;border-radius:99px;background:rgba(255,255,255,.4);cursor:pointer;transition:width .25s,background .25s}.ndots button.on{width:24px;background:#fff}
+.nup{position:absolute;left:8%;bottom:5.5%;z-index:4;font-size:11px;color:rgba(255,255,255,.7);display:none}
+.hcard.nws{padding:0;display:block}.hcard.nws::after{display:none}
+.nspin{position:absolute;inset:0;border-radius:inherit}
+@media (max-width:1099px){.hart{display:block;margin-top:22px}.cover{display:flex;flex-direction:column}.cover>.hart{order:9;width:100%;aspect-ratio:4/3;max-width:560px;position:relative}.hcard{position:absolute;inset:0;border-radius:28px;background:linear-gradient(135deg,var(--ac),var(--ac2));display:grid;place-items:center;padding:10%;overflow:hidden}.ns h3{font-size:22px}.ns p{font-size:14px}}
+@media (max-width:480px){.cover>.hart{aspect-ratio:1/1.05}}
 </style>
 </head>
 <body>
@@ -285,7 +303,7 @@ h3{font-size:20px}
 <header class="top"><button class="logo" id="goHome" type="button" aria-label="FinScope, на главную">Fin<b>Scope</b></button><nav class="nav" aria-label="Разделы"><button type="button" class="lang" id="theme"></button><button type="button" class="lang" id="lang"></button><button type="button" data-go="home" class="on">Главная</button><button type="button" data-go="about">О нас</button></nav></header>
 <section id="home">
  <div class="cover">
-  <div class="hart" aria-hidden="true"><div class="hcard"><svg viewBox="0 0 400 300" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity=".55"/></linearGradient></defs><g fill="none" stroke="url(#hg)" stroke-linecap="round" stroke-linejoin="round"><circle cx="165" cy="130" r="78" stroke-width="20"/><line x1="222" y1="187" x2="290" y2="255" stroke-width="26"/><polyline points="122,152 150,122 168,140 208,98" stroke-width="13"/><polyline points="184,98 208,98 208,122" stroke-width="13"/></g></svg></div><span class="hchip c1">Отчёты SEC</span><span class="hchip c2">Опционы</span><span class="hchip c3">Новости мира</span></div>
+  <div class="hart" id="news" role="region" aria-roledescription="carousel" aria-label="Новости экономики"><div class="hcard" id="ncard"><svg viewBox="0 0 400 300" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity=".55"/></linearGradient></defs><g fill="none" stroke="url(#hg)" stroke-linecap="round" stroke-linejoin="round"><circle cx="165" cy="130" r="78" stroke-width="20"/><line x1="222" y1="187" x2="290" y2="255" stroke-width="26"/><polyline points="122,152 150,122 168,140 208,98" stroke-width="13"/><polyline points="184,98 208,98 208,122" stroke-width="13"/></g></svg></div></div>
   <span class="eyebrow">Помощник по инвестициям</span>
   <h1>Акции понятным языком</h1>
   <p class="lead">FinScope собирает отчёты компаний из SEC, цены, опционы и новости со всего мира. Затем объясняет простыми словами, в чём сила и слабость акции, от чего зависит её рост и какие есть риски.</p>
@@ -670,7 +688,7 @@ function setLang(l){
   if(LIVE.ser[0])setSess(LIVE.ser[0],LIVE.prev);
   liveBadge();
  }
- mkRender();if(typeof evtRender==='function'&&!$('stock').hidden)evtRender();
+ mkRender();if(typeof evtRender==='function'&&!$('stock').hidden)evtRender();if(typeof newsRender==='function')newsRender();
 }
 document.getElementById('lang').addEventListener('click',()=>setLang(LANG==='en'?'ru':'en'));
 applyLang();
@@ -691,6 +709,38 @@ applyLang();
  bt.onclick=async()=>{if(!dp)return;dp.prompt();try{await dp.userChoice}catch(e){}dp=null;b.hidden=true};
  if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
 })();
+
+/* ===== Баннер новостей: data/news.json, обновляется ежедневно ===== */
+const NI={fed:'<path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/>',cpi:'<path d="M19 5L5 19M7 8a1.5 1.5 0 1 0 0-.01M17 17a1.5 1.5 0 1 0 0-.01"/>',imf:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',cn:'<path d="M3 8l9-4 9 4-9 4zM3 8v8l9 4 9-4V8M12 12v8"/>',ai:'<rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/>',mkt:'<path d="M3 7l6 6 4-4 8 8M21 11v6h-6"/>',eu:'<path d="M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9"/>'};
+const NG={fed:['#1d4ed8','#6d28d9'],cpi:['#b4231a','#c2410c'],imf:['#0e7490','#2563eb'],cn:['#9f1239','#c2410c'],ai:['#6d28d9','#be185d'],mkt:['#1e3a8a','#0f766e'],eu:['#1d4ed8','#4338ca']};
+const NK={fed:['Центробанки','Central banks'],cpi:['Инфляция','Inflation'],imf:['Прогноз','Outlook'],cn:['Торговля','Trade'],ai:['Технологии','Tech'],mkt:['Рынки','Markets'],eu:['Облигации','Bonds']};
+let NEWS=null,NIDX=0,NTMR=null,NPAUSE=false;
+function newsRender(){
+ const c=$('ncard');if(!c||!NEWS||!NEWS.items.length)return;const en=LANG==='en',L=NEWS.items;
+ const fd=d=>new Date(d+'T12:00:00Z').toLocaleDateString(LOC,{day:'numeric',month:'short',timeZone:'UTC'}).replace('.','');
+ c.classList.add('nws');
+ c.innerHTML=L.map((n,i)=>{const g=NG[n.k]||NG.fed,x=en&&n.en?n.en:n;return `<article class="ns${i===NIDX?' on':''}" style="background:linear-gradient(135deg,${g[0]},${g[1]})" aria-hidden="${i===NIDX?'false':'true'}" aria-label="${i+1} / ${L.length}"><span class="nk">${(NK[n.k]||NK.fed)[en?1:0]}</span><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${NI[n.k]||NI.fed}</svg></span><h3></h3><p></p><div class="nf"><span class="ns-src"></span><a target="_blank" rel="noopener noreferrer" tabindex="${i===NIDX?0:-1}">${en?'Read source':'Читать источник'} ↗</a></div></article>`}).join('')
+ +`<button type="button" class="nar pv" aria-label="${en?'Previous news':'Предыдущая новость'}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><button type="button" class="nar nx" aria-label="${en?'Next news':'Следующая новость'}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button><div class="ndots">${L.map((n,i)=>`<button type="button" class="${i===NIDX?'on':''}" aria-label="${i+1}"></button>`).join('')}</div>`;
+ c.querySelectorAll('.ns').forEach((a,i)=>{const n=L[i],x=en&&n.en?n.en:n;a.querySelector('h3').textContent=x.t;a.querySelector('p').textContent=x.s;a.querySelector('.ns-src').textContent=n.src+' · '+fd(n.d);const l=a.querySelector('a');if(/^https:\/\//.test(n.u))l.href=n.u;else l.remove()});
+ c.querySelector('.pv').onclick=()=>newsGo(NIDX-1,true);c.querySelector('.nx').onclick=()=>newsGo(NIDX+1,true);
+ c.querySelectorAll('.ndots button').forEach((b,i)=>b.onclick=()=>newsGo(i,true));
+}
+function newsGo(i,user){
+ const c=$('ncard');if(!c||!NEWS)return;const n=NEWS.items.length;NIDX=(i+n)%n;
+ c.querySelectorAll('.ns').forEach((a,k)=>{a.classList.toggle('on',k===NIDX);a.setAttribute('aria-hidden',k===NIDX?'false':'true');const l=a.querySelector('a');if(l)l.tabIndex=k===NIDX?0:-1});
+ c.querySelectorAll('.ndots button').forEach((b,k)=>b.classList.toggle('on',k===NIDX));
+ if(user)newsTimer();
+}
+function newsTimer(){clearInterval(NTMR);if(matchMedia('(prefers-reduced-motion:reduce)').matches||!NEWS||NEWS.items.length<2)return;NTMR=setInterval(()=>{if(!NPAUSE&&!document.hidden&&!$('home').hidden)newsGo(NIDX+1)},8000)}
+async function newsInit(){
+ try{const j=await getJSON(DATA_BASE+'news.json?'+Math.floor(Date.now()/600000));
+  if(!j||!Array.isArray(j.items))return;const L=j.items.filter(n=>n&&n.t&&n.s&&n.u).slice(0,10);if(!L.length)return;
+  NEWS={updated:j.updated,items:L};newsRender();newsTimer();
+  const h=$('news');
+  if(h){h.addEventListener('mouseenter',()=>NPAUSE=true);h.addEventListener('mouseleave',()=>NPAUSE=false);h.addEventListener('focusin',()=>NPAUSE=true);h.addEventListener('focusout',()=>NPAUSE=false);
+   let x0=null;h.addEventListener('pointerdown',e=>{if(e.pointerType==='touch')x0=e.clientX});h.addEventListener('pointerup',e=>{if(x0==null)return;const d=e.clientX-x0;x0=null;if(Math.abs(d)>40)newsGo(NIDX+(d<0?1:-1),true)})}
+ }catch(e){}
+}
 function toast(t){let e=document.getElementById('toast');if(!e){e=document.createElement('div');e.id='toast';e.className='toast';e.setAttribute('role','status');document.body.append(e)}e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>{e.hidden=true},2200)}
 function shareUrl(){return (location.protocol.startsWith('http')?location.origin:'https://finscope.uk')+'/'+(CUR?CUR.t:'')}
 $('shr').addEventListener('click',async()=>{
@@ -1085,6 +1135,7 @@ $('cpb').addEventListener('click',async()=>{
 });
 window.addEventListener('hashchange',route);
 (async()=>{
+ newsInit();
  try{await loadReg()}catch(e){REG=[]}
  homeTexts();loadQuotes().then(()=>{hmRender();liveQuotes()});hmRender();
  if(!REG.length){const m=$('sm');m.hidden=false;m.textContent='Не удалось загрузить список акций. Обнови страницу чуть позже.';return}

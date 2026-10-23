@@ -1,0 +1,89 @@
+{
+ "updated": "2026-10-23",
+ "items": [
+  {
+   "k": "fed",
+   "t": "На следующей неделе ФРС решает по ставке",
+   "s": "Заседание пройдёт 27–28 октября. Рынок ждёт, что ставка останется 3,75–4,00%, а некоторые крупные банки допускают её повышение в декабре.",
+   "src": "The Rio Times",
+   "u": "https://www.riotimesonline.com/global-economy-briefing-october-23-2026/",
+   "d": "2026-10-23",
+   "en": {
+    "t": "The Fed decides on rates next week",
+    "s": "The meeting is on 27–28 October. Markets expect the rate to stay at 3.75–4.00%, while some large banks see a possible hike in December."
+   }
+  },
+  {
+   "k": "cpi",
+   "t": "Инфляция в США: 3,7% за год",
+   "s": "Цены в сентябре выросли на 3,7% к прошлому году, бензин подорожал на 34%. Базовая инфляция без еды и энергии поднялась до 2,6%.",
+   "src": "Deloitte",
+   "u": "https://www.deloitte.com/us/en/insights/topics/economy/global-economic-outlook/weekly-update.html",
+   "d": "2026-10-22",
+   "en": {
+    "t": "US inflation: 3.7% a year",
+    "s": "Prices in September were 3.7% higher than a year earlier, and gasoline rose 34%. Core inflation, without food and energy, climbed to 2.6%."
+   }
+  },
+  {
+   "k": "imf",
+   "t": "МВФ: мировая экономика вырастет на 3,1%",
+   "s": "Такой прогноз на 2026 год, на 2027-й ждут 3,4%. Главные риски: война на Ближнем Востоке, торговые споры и возможный спад вложений в ИИ.",
+   "src": "МИД Новой Зеландии (обзор)",
+   "u": "https://www.mfat.govt.nz/en/trade/mfat-market-reports/weekly-global-economic-report-19-october-2026",
+   "d": "2026-10-19",
+   "en": {
+    "t": "IMF: world economy to grow 3.1%",
+    "s": "That is the forecast for 2026, with 3.4% expected in 2027. Main risks: the Middle East war, trade disputes and a possible slowdown in AI investment."
+   }
+  },
+  {
+   "k": "cn",
+   "t": "Экспорт Китая в сентябре вырос на 36%",
+   "s": "Это самый быстрый рост с февраля, поставки в США прибавили почти 40%. Но в микросхемах почти весь рост дали цены, а не объёмы.",
+   "src": "Deloitte",
+   "u": "https://www.deloitte.com/us/en/insights/topics/economy/global-economic-outlook/weekly-update.html",
+   "d": "2026-10-22",
+   "en": {
+    "t": "China exports jumped 36% in September",
+    "s": "It is the fastest growth since February, and shipments to the US gained almost 40%. But in chips nearly all of the rise came from prices, not volumes."
+   }
+  },
+  {
+   "k": "ai",
+   "t": "Инвесторы тревожатся из-за долгов ИИ-компаний",
+   "s": "Выручки дата-центров может не хватить на долги: по оценке Gartner, к 2030 году нужно около 8,5 трлн $, а ждут не больше 3,6 трлн. Акции чипмейкеров за день упали на 4,3%.",
+   "src": "Deloitte",
+   "u": "https://www.deloitte.com/us/en/insights/topics/economy/global-economic-outlook/weekly-update.html",
+   "d": "2026-10-22",
+   "en": {
+    "t": "Investors worry about AI companies debt",
+    "s": "Data center revenue may not cover the debt: Gartner estimates about $8.5 trillion is needed by 2030, but no more than $3.6 trillion is expected. Chipmaker shares fell 4.3% in one day."
+   }
+  },
+  {
+   "k": "mkt",
+   "t": "Nasdaq упал на 2,6%, золото подешевело",
+   "s": "22 октября технологические акции потянули рынок вниз: S&P 500 потерял 1,2%. Золото снизилось примерно на 2,5%, доходность 10-летних облигаций США тоже.",
+   "src": "The Rio Times",
+   "u": "https://www.riotimesonline.com/global-economy-briefing-october-23-2026/",
+   "d": "2026-10-22",
+   "en": {
+    "t": "Nasdaq fell 2.6%, gold got cheaper",
+    "s": "On 22 October tech stocks dragged the market down: the S&P 500 lost 1.2%. Gold dropped about 2.5%, and so did the 10-year US Treasury yield."
+   }
+  },
+  {
+   "k": "eu",
+   "t": "Доходность облигаций Франции выше 5%",
+   "s": "Десятилетние бумаги закрылись выше 5% два дня подряд, это максимум с 2002 года. В пятницу агентство Moody’s пересматривает рейтинг страны.",
+   "src": "The Rio Times",
+   "u": "https://www.riotimesonline.com/global-economy-briefing-october-23-2026/",
+   "d": "2026-10-22",
+   "en": {
+    "t": "French bond yields above 5%",
+    "s": "Ten-year bonds closed above 5% two days in a row, the highest since 2002. On Friday Moody’s reviews the country’s rating."
+   }
+  }
+ ]
+}
