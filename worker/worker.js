@@ -275,28 +275,36 @@ async function sitemap(u) {
   return new Response(xml, { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'public, max-age=3600' } });
 }
 // Список американских компаний (SEC company_tickers_exchange.json). Раз в сутки обновляется лениво: при первом запросе после истечения срока.
-// Хранится в KV (STATS, ключ uni:v1) и в памяти воркера. Поиск идёт на сервере, чтобы не отдавать браузеру ~10 тысяч строк.
+// Хранится в KV (STATS, ключ uni:v2) и в памяти воркера. Поиск идёт на сервере, чтобы не отдавать браузеру ~10 тысяч строк.
 let UNI = null, UNI_AT = 0;
 async function universe(env, ctx) {
   const now = Date.now();
   if (UNI && now - UNI_AT < 6 * 3600e3) return UNI;
   let rec = null;
-  try { if (env.STATS) rec = await env.STATS.get('uni:v1', 'json'); } catch (e) {}
+  try { if (env.STATS) rec = await env.STATS.get('uni:v2', 'json'); } catch (e) {}
   if (rec && rec.rows && now - rec.at < 24 * 3600e3) { UNI = rec.rows; UNI_AT = now; return UNI; }
   if (now - UNI_FAIL < 300e3) return rec && rec.rows ? rec.rows : null; // недавний сбой: не долбим источники каждый запрос
+  const [sec, nq] = await Promise.allSettled([uniSec(env), uniNasdaq()]);
   const errs = [];
-  const done = rows => {
+  if (sec.status === 'rejected') errs.push('sec: ' + (sec.reason && sec.reason.message || sec.reason));
+  if (nq.status === 'rejected') errs.push('nasdaq: ' + (nq.reason && nq.reason.message || nq.reason));
+  const base = sec.status === 'fulfilled' ? sec.value : nq.status === 'fulfilled' ? nq.value.rows : null;
+  if (base) {
+    const etf = nq.status === 'fulfilled' ? nq.value.etf : new Set();
+    const rows = base.filter(r => !etf.has(r[0]) && !ETFRX.test(r[1]));
     UNI = rows; UNI_AT = now; UNI_ERR = '';
-    try { if (env.STATS) ctx.waitUntil(env.STATS.put('uni:v1', JSON.stringify({ at: now, rows }))); } catch (e) {}
+    try { if (env.STATS) ctx.waitUntil(env.STATS.put('uni:v2', JSON.stringify({ at: now, rows }))); } catch (e) {}
     return rows;
-  };
-  try { return done(await uniSec(env)); } catch (e) { errs.push('sec: ' + (e && e.message || e)); }
-  try { return done(await uniNasdaq()); } catch (e) { errs.push('nasdaq: ' + (e && e.message || e)); }
+  }
   UNI_ERR = errs.join(' | '); UNI_FAIL = now;
   if (rec && rec.rows) { UNI = rec.rows; UNI_AT = now - 5 * 3600e3; return UNI; } // оба источника недоступны: берём устаревший список и пробуем снова через час
   return null;
 }
 let UNI_ERR = '', UNI_FAIL = 0;
+// Фонды, ETF и плечевые продукты: в разборе компаний они не нужны.
+const ETFRX = /\b(ETF|ETN|ETFS|2X|3X|-1X|-2X|-3X|ULTRA|ULTRAPRO|ULTRASHORT|LEVERAGED|INVERSE)\b|\bDaily\b.*\b(Long|Short|Target|Bull|Bear)\b|\b(ProShares|Direxion|iShares|SPDR|GraniteShares|Tradr|T-Rex|Defiance|Corgi|Roundhill|YieldMax|WisdomTree|VanEck|First Trust)\b/i;
+// Известные компании (S&P 500, Nasdaq-100 и популярные у частных инвесторов): в подсказках стоят выше.
+const POP = new Set(('AAPL MSFT NVDA AMZN GOOGL GOOG META TSLA AVGO BRK-B LLY JPM V UNH XOM WMT MA ORCL COST PG JNJ HD NFLX BAC ABBV CVX KO CRM AMD TMUS WFC CSCO MRK ACN PEP LIN MCD ADBE ABT IBM PM NOW GE DIS TXN QCOM CAT ISRG INTU VZ AMGN T BKNG GS AXP MS RTX SPGI LOW NEE PGR UBER BLK HON UNP SYK DHR ETN TJX AMAT BSX C PFE COP SCHW BA LMT ADP VRTX FI MMC PANW CB MDT GILD ADI DE KKR MU SBUX PLD ANET LRCX BMY SO CME MO ICE UPS TMO AMT WM INTC CI ELV MDLZ NKE APH KLAC SHW DUK TT MCK CDNS PYPL ZTS REGN CMG SNPS EQIX MCO CRWD ITW AON CL MSI PH WELL USB APD ORLY MAR CTAS GD EMR PNC COF FDX BDX TGT ECL CSX MNST ADSK AJG WMB NOC OKE ROP HLT AZO SPG NSC ABNB FTNT JCI CARR DLR FCX TFC AFL SLB PSA AEP KMI TRV NXPI GM CEG MET AIG COIN DASH PLTR APP SHOP SPOT XYZ SNOW DDOG NET ZS MDB TEAM WDAY TTD ROKU PINS SNAP RBLX U HOOD SOFI AFRM RIVN LCID NIO F GME AMC BABA JD PDD BIDU TSM ASML ARM SMCI DELL HPQ MRVL ON MCHP WBD CMCSA CHTR EA TTWO LULU DECK ULTA KR DG DLTR ROST BBY EBAY ETSY CVNA CCL RCL NCLH DAL UAL AAL LUV MARA RIOT CLSK HUT CORZ IREN CRWV NBIS OKLO SMR RKLB ASTS IONQ RGTI QBTS AZN NVO SNY NVS GSK TM SONY BP SHEL RIO BHP VALE MSTR').split(' '));
 async function uniSec(env) {
   const r = await fetch('https://www.sec.gov/files/company_tickers_exchange.json', { headers: { 'user-agent': env.SEC_UA || 'FinScope personal research site (finscope.uk)', accept: 'application/json' } });
   if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -317,13 +325,13 @@ async function uniSec(env) {
 async function uniNasdaq() {
   const get = async u => { const r = await fetch(u); if (!r.ok) throw new Error(u.split('/').pop() + ' HTTP ' + r.status); return (await r.text()).split(/\r?\n/); };
   const [a, o] = await Promise.all([get('https://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt'), get('https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt')]);
-  const seen = new Set(), rows = [];
+  const seen = new Set(), rows = [], etf = new Set();
   const clean = n => n.replace(/ - (Common Stock|Class [A-Z] Common Stock|Ordinary Shares|American Depositary Shares|Common Shares|Class [A-Z] Ordinary Shares).*$/i, '').replace(/ (Common Stock|Ordinary Shares|Common Shares)$/i, '').trim();
-  const add = (t, n, mic) => { t = t.toUpperCase().replace(/\./g, '-'); if (!t || /[$^ ]/.test(t) || seen.has(t)) return; seen.add(t); rows.push([t, clean(n), mic]); };
-  for (const l of a.slice(1)) { const c = l.split('|'); if (c.length < 7 || c[3] === 'Y') continue; add(c[0], c[1], 'XNAS'); }
-  for (const l of o.slice(1)) { const c = l.split('|'); if (c.length < 7 || c[6] === 'Y') continue; add(c[0], c[1], c[2] === 'Z' ? 'BATS' : 'XNYS'); }
+  const add = (t, n, mic, isEtf) => { t = t.toUpperCase().replace(/\./g, '-'); if (!t || /[$^ ]/.test(t) || seen.has(t)) return; seen.add(t); if (isEtf) etf.add(t); rows.push([t, clean(n), mic]); };
+  for (const l of a.slice(1)) { const c = l.split('|'); if (c.length < 7 || c[3] === 'Y') continue; add(c[0], c[1], 'XNAS', c[6] === 'Y'); }
+  for (const l of o.slice(1)) { const c = l.split('|'); if (c.length < 7 || c[6] === 'Y') continue; add(c[0], c[1], c[2] === 'Z' ? 'BATS' : 'XNYS', c[4] === 'Y'); }
   if (rows.length < 1000) throw new Error('short list ' + rows.length);
-  return rows;
+  return { rows, etf };
 }
 const UWORD = new Set(['INC', 'CORP', 'CO', 'LTD', 'PLC', 'THE', 'CORPORATION', 'COMPANY', 'HOLDINGS', 'GROUP', 'NEW']);
 function uniSearch(rows, q, lim) {
@@ -341,7 +349,7 @@ function uniSearch(rows, q, lim) {
       else if (w.some(x => x.startsWith(q))) sc = 50;
       else if (q.length >= 3 && n.includes(q)) sc = 30;
     }
-    if (sc) out.push([sc, r]);
+    if (sc) out.push([sc + (POP.has(t) ? 15 : 0), r]);
   }
   out.sort((a, b) => b[0] - a[0] || a[1][0].length - b[1][0].length || (a[1][0] < b[1][0] ? -1 : 1));
   return out.slice(0, lim).map(x => ({ t: x[1][0], name: x[1][1], mic: x[1][2] }));
