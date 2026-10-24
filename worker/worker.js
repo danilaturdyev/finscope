@@ -274,6 +274,65 @@ async function sitemap(u) {
   const xml = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + urls.map(p => '<url><loc>' + esc(SITE + p) + '</loc><changefreq>daily</changefreq></url>').join('') + '</urlset>';
   return new Response(xml, { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'public, max-age=3600' } });
 }
+// Список американских компаний (SEC company_tickers_exchange.json). Раз в сутки обновляется лениво: при первом запросе после истечения срока.
+// Хранится в KV (STATS, ключ uni:v1) и в памяти воркера. Поиск идёт на сервере, чтобы не отдавать браузеру ~10 тысяч строк.
+let UNI = null, UNI_AT = 0;
+async function universe(env, ctx) {
+  const now = Date.now();
+  if (UNI && now - UNI_AT < 6 * 3600e3) return UNI;
+  let rec = null;
+  try { if (env.STATS) rec = await env.STATS.get('uni:v1', 'json'); } catch (e) {}
+  if (rec && rec.rows && now - rec.at < 24 * 3600e3) { UNI = rec.rows; UNI_AT = now; return UNI; }
+  try {
+    const r = await fetch('https://www.sec.gov/files/company_tickers_exchange.json', { headers: { 'user-agent': env.SEC_UA || 'FinScope personal research site (finscope.uk)', accept: 'application/json' } });
+    if (!r.ok) throw new Error('sec ' + r.status);
+    const j = await r.json(), f = j.fields || [], iN = f.indexOf('name'), iT = f.indexOf('ticker'), iX = f.indexOf('exchange');
+    const seen = new Set(), rows = [];
+    for (const d of j.data || []) {
+      const x = String(d[iX] || '').toUpperCase();
+      if (!/^(NASDAQ|NYSE|CBOE)/.test(x)) continue; // без OTC и бумаг без биржи
+      const t = String(d[iT] || '').toUpperCase();
+      if (!t || seen.has(t)) continue;
+      seen.add(t);
+      rows.push([t, String(d[iN] || ''), x.startsWith('NASDAQ') ? 'XNAS' : x.startsWith('NYSE') ? 'XNYS' : 'BATS']);
+    }
+    if (rows.length < 1000) throw new Error('short list');
+    UNI = rows; UNI_AT = now;
+    try { if (env.STATS) ctx.waitUntil(env.STATS.put('uni:v1', JSON.stringify({ at: now, rows }))); } catch (e) {}
+    return UNI;
+  } catch (e) {
+    if (rec && rec.rows) { UNI = rec.rows; UNI_AT = now - 5 * 3600e3; return UNI; } // сбой SEC: берём устаревший список и пробуем снова через час
+    return null;
+  }
+}
+const UWORD = new Set(['INC', 'CORP', 'CO', 'LTD', 'PLC', 'THE', 'CORPORATION', 'COMPANY', 'HOLDINGS', 'GROUP', 'NEW']);
+function uniSearch(rows, q, lim) {
+  q = q.toUpperCase().replace(/[^A-Z0-9 .\-&]/g, '').trim();
+  if (q.length < 1) return [];
+  const out = [];
+  for (const r of rows) {
+    const t = r[0], n = r[1].toUpperCase();
+    let sc = 0;
+    if (t === q) sc = 100;
+    else if (t.startsWith(q)) sc = 80 - Math.min(t.length - q.length, 10);
+    else if (q.length >= 2) {
+      const w = n.split(/[^A-Z0-9]+/).filter(x => x && !UWORD.has(x));
+      if (n.startsWith(q)) sc = 70;
+      else if (w.some(x => x.startsWith(q))) sc = 50;
+      else if (q.length >= 3 && n.includes(q)) sc = 30;
+    }
+    if (sc) out.push([sc, r]);
+  }
+  out.sort((a, b) => b[0] - a[0] || a[1][0].length - b[1][0].length || (a[1][0] < b[1][0] ? -1 : 1));
+  return out.slice(0, lim).map(x => ({ t: x[1][0], name: x[1][1], mic: x[1][2] }));
+}
+async function uni(u, env, ctx) {
+  const H = { 'content-type': 'application/json; charset=utf-8', 'access-control-allow-origin': '*', 'cache-control': 'public, max-age=300' };
+  const rows = await universe(env, ctx);
+  if (!rows) return new Response(JSON.stringify({ ok: false, items: [] }), { status: 503, headers: { ...H, 'cache-control': 'no-store' } });
+  const items = uniSearch(rows, (u.searchParams.get('q') || '').slice(0, 40), 8);
+  return new Response(JSON.stringify({ ok: true, items }), { headers: H });
+}
 export default {
   async fetch(req, env, ctx) {
     const u = new URL(req.url);
@@ -281,6 +340,7 @@ export default {
     if (u.pathname === '/api/series') return series(u, env, ctx);
     if (u.pathname === '/api/quotes') return quotes(u, env, ctx);
     if (u.pathname === '/api/chat') return chat(req, env, ctx);
+    if (u.pathname === '/api/universe') return uni(u, env, ctx);
     if (u.pathname === '/api/hit') return hit(u, env);
     if (u.pathname === '/stats') return stats(u, env);
     if (u.pathname.startsWith('/s/')) return share(u, u.pathname.slice(3).toUpperCase());

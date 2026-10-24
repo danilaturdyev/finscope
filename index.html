@@ -1109,18 +1109,29 @@ function go(v){
 function openStock(t){['sg','sm','sg2','sm2'].forEach(i=>$(i).hidden=true);$('q2').value='';const T=t||(REG[0]&&REG[0].t);if(T)location.hash='#/'+T}
 async function loadReg(){REG=await getJSON(DATA_BASE+'stocks.json?'+Math.floor(Date.now()/120000));if(!Array.isArray(REG))REG=[];buildRX(Object.assign({},...REG.map(x=>x.en||{})))}
 function bindSearch(qi,fi,gi,mi){
- const Q=$(qi),G=$(gi),M=$(mi);
- Q.addEventListener('input',()=>{
-  const r=findStocks(Q.value);M.hidden=true;
-  if(!r.length){G.hidden=true;return}
-  G.innerHTML=r.map(x=>`<button type="button" data-t="${x.t}">${x.logo?`<img${x.logoShape==='round'?' class="round"':''} alt="" src="${logoUrl(x)}">`:''}<div><b>${x.t} · ${x.name}</b><span>${x.sub||''}</span></div></button>`).join('');
+ const Q=$(qi),G=$(gi),M=$(mi);let tm=0,seq=0,rem=[];
+ const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ const draw=()=>{
+  const loc=findStocks(Q.value),have=new Set(loc.map(x=>x.t)),more=rem.filter(x=>!have.has(x.t)&&!REG.some(s=>s.t===x.t));
+  if(!loc.length&&!more.length){G.hidden=true;return}
+  G.innerHTML=loc.map(x=>`<button type="button" data-t="${x.t}">${x.logo?`<img${x.logoShape==='round'?' class="round"':''} alt="" src="${logoUrl(x)}">`:''}<div><b>${x.t} · ${x.name}</b><span>${x.sub||''}</span></div></button>`).join('')+
+   more.map(x=>`<button type="button" data-u="${esc(x.t)}" data-n="${esc(x.name)}"><div><b>${esc(x.t)} · ${esc(x.name)}</b><span>${x.mic==='XNAS'?'Nasdaq':x.mic==='XNYS'?'NYSE':'Cboe'} · разбора пока нет</span></div></button>`).join('');
   G.hidden=false;
+ };
+ const note=(t,n)=>{G.hidden=true;M.hidden=false;M.textContent='«'+n+'» ('+t+') есть на американской бирже, но подробного разбора на сайте пока нет.'};
+ const ask=async q=>{const k=++seq;try{const r=await fetch('/api/universe?q='+encodeURIComponent(q));if(!r.ok)throw 0;const j=await r.json();if(k!==seq)return null;rem=j.items||[];return rem}catch(e){return null}};
+ Q.addEventListener('input',()=>{
+  M.hidden=true;draw();clearTimeout(tm);const q=Q.value.trim();
+  if(q.length<2){rem=[];seq++;return}
+  tm=setTimeout(async()=>{if(await ask(q))draw()},220);
  });
- G.addEventListener('click',e=>{const b=e.target.closest('button');if(b)openStock(b.dataset.t)});
- $(fi).addEventListener('submit',e=>{
+ G.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.u)note(b.dataset.u,b.dataset.n);else openStock(b.dataset.t)});
+ $(fi).addEventListener('submit',async e=>{
   e.preventDefault();const q=Q.value.trim();if(!q)return;
   const f=findStocks(q);if(f.length){openStock(f[0].t);return}
-  G.hidden=true;M.hidden=false;M.textContent='«'+q+'» пока нет в базе. Другие акции добавляются по запросу владельца сайта.';
+  clearTimeout(tm);const r=await ask(q);const x=r&&r.find(y=>!REG.some(s=>s.t===y.t));
+  if(x){note(x.t,x.name);return}
+  G.hidden=true;M.hidden=false;M.textContent='«'+q+'» не найдено среди компаний на американских биржах. Проверь тикер или название.';
  });
 }
 bindSearch('q','sf','sg','sm');bindSearch('q2','sf2','sg2','sm2');
