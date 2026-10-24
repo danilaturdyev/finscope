@@ -206,6 +206,12 @@ a{color:var(--ac)}.src{font-size:14px;padding:8px 0;border-top:1px solid var(--b
 .ft-logo{font-weight:800;font-size:18px;color:var(--tx);letter-spacing:-.03em}.ft-logo b{background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
 .ft-l{display:flex;gap:6px;flex-wrap:wrap}.ft-l button{border:0;background:transparent;color:var(--mu);font:inherit;font-weight:700;padding:6px 10px;border-radius:99px;cursor:pointer}.ft-l button:hover{background:var(--chip);color:var(--tx)}
 .ft p{margin:10px 0 0;line-height:1.55;max-width:70ch}
+.ft.ft2{display:block}
+.ft2 .ft-top{flex-direction:column;align-items:center;gap:8px}
+.ft2 .ft-l{justify-content:center}
+.ft2 p{margin:14px auto 0;max-width:78ch;text-align:center}
+.ft2 .ft-adv{font-weight:600;color:var(--tx);opacity:.85}
+.ft2 .ft-bot{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--bd);font-size:12.5px}
 .faq{border-top:1px solid var(--bd);padding:12px 0}.faq:first-of-type{border-top:0}
 .faq summary{cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:12px}.faq summary::-webkit-details-marker{display:none}
 .faq summary::after{content:'+';color:var(--mu);font-weight:800}.faq[open] summary::after{content:'−'}
@@ -272,14 +278,6 @@ h3{font-size:20px}
 .about>.card:last-of-type{grid-column:1/-1}
 .about:has(details[open])>.card:nth-of-type(5){align-self:start}
 .ft{margin-top:72px}
-.ft.ft2{display:block;text-align:left;justify-content:flex-start}
-.ft2 .ft-top{align-items:center}
-.ft2 .ft-l{justify-content:flex-end}
-.ft2 p{margin:14px 0 0;max-width:78ch}
-.ft2 .ft-bot{display:flex;justify-content:space-between;gap:8px 20px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--bd);font-size:12.5px}
-@media (min-width:641px){.ft2 .ft-top{flex-direction:column;align-items:center;gap:8px}.ft2 .ft-l{justify-content:center}.ft2 p{margin:14px auto 0;text-align:center}.ft2 .ft-bot{flex-direction:column;align-items:center;gap:6px;text-align:center}}
-.ft2 .ft-adv{font-weight:600;color:var(--tx);opacity:.85}
-@media (max-width:640px){.ft2 .ft-top{flex-direction:column;align-items:flex-start}.ft2 .ft-l{justify-content:flex-start;margin-left:-10px}.ft2 .ft-bot{flex-direction:column}}
 }
 #stock[hidden],.about[hidden]{display:none!important}
 @media (min-width:1100px){
