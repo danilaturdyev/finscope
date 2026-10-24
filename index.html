@@ -272,6 +272,14 @@ h3{font-size:20px}
 .about>.card:last-of-type{grid-column:1/-1}
 .about:has(details[open])>.card:nth-of-type(5){align-self:start}
 .ft{margin-top:72px}
+.ft.ft2{display:block;text-align:left;justify-content:flex-start}
+.ft2 .ft-top{align-items:center}
+.ft2 .ft-l{justify-content:flex-end}
+.ft2 p{margin:14px 0 0;max-width:78ch}
+.ft2 .ft-bot{display:flex;justify-content:space-between;gap:8px 20px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--bd);font-size:12.5px}
+@media (min-width:641px){.ft2 .ft-top{flex-direction:column;align-items:center;gap:8px}.ft2 .ft-l{justify-content:center}.ft2 p{margin:14px auto 0;text-align:center}.ft2 .ft-bot{flex-direction:column;align-items:center;gap:6px;text-align:center}}
+.ft2 .ft-adv{font-weight:600;color:var(--tx);opacity:.85}
+@media (max-width:640px){.ft2 .ft-top{flex-direction:column;align-items:flex-start}.ft2 .ft-l{justify-content:flex-start;margin-left:-10px}.ft2 .ft-bot{flex-direction:column}}
 }
 #stock[hidden],.about[hidden]{display:none!important}
 @media (min-width:1100px){
@@ -337,7 +345,6 @@ h3{font-size:20px}
  </div>
  <div class="how"><h2>Как это работает</h2><div class="steps"><div class="step"><i>1</i><div><b>Введи тикер</b><span>Найди акцию по тикеру или названию компании.</span></div></div><div class="step"><i>2</i><div><b>Смотри данные</b><span>Цены, отчёты SEC, опционы и новости собраны на одной странице.</span></div></div><div class="step"><i>3</i><div><b>Читай объяснение</b><span>Сильные и слабые стороны, сценарии и риски простыми словами.</span></div></div></div></div>
  <div class="inst" id="inst" hidden><img src="/icon-192.png" width="56" height="56" alt="" loading="lazy"><div class="itx"><b>Установить на устройство</b><span id="instS">Откроется как приложение: на весь экран и с иконкой на главном экране</span></div><button type="button" id="instb" class="go">Установить</button></div>
- <p class="disc" id="disc">FinScope не является инвестиционным советником, решение остаётся за тобой.</p>
 </section>
 <section id="about" class="about" hidden>
  <h2>О нас</h2>
@@ -415,8 +422,7 @@ h3{font-size:20px}
 </section>
 <div class="tip" id="tip" role="tooltip" hidden></div>
 <div class="mdl" id="mdl" hidden><div class="mdl-bg" id="mdlBg"></div><div class="mdl-sh" role="dialog" aria-modal="true" aria-labelledby="mdlT"><button type="button" class="mdl-x" id="mdlX" aria-label="Закрыть">✕</button><h2 id="mdlT">Рабочее время рынка</h2><p class="mdl-s">Время указано в местном часовом поясе</p><div class="mdl-l" id="mdlL"></div><p class="mdl-n">Учтены праздники и сокращённые дни биржи NYSE на 2026–2027 годы. Часы относятся к рынку акций США (Нью-Йорк).</p><a class="mdl-a" href="https://www.nyse.com/markets/hours-calendars" target="_blank" rel="noopener noreferrer">Подробнее о времени работы рынка</a></div></div>
-<footer class="ft"><div class="ft-top"><div class="ft-logo">Fin<b>Scope</b></div><div class="ft-l"><button type="button" data-go="home">Главная</button><button type="button" data-go="about">О нас</button></div></div><p>Информация на сайте носит справочный характер и не является инвестиционной рекомендацией. Инвестиции связаны с риском потери вложенных средств. Данные могут содержать ошибки и устаревать, проверяйте ключевые цифры в первоисточниках.</p><p>Источники: отчёты SEC EDGAR, Twelve Data, открытые биржевые и новостные сайты.</p><p>© 2026 FinScope</p></footer>
-<footer class="ft"><button type="button" data-go="legal">Отказ от ответственности и источники</button><span aria-hidden="true">·</span><button type="button" data-go="about">О нас</button></footer>
+<footer class="ft ft2"><div class="ft-top"><div class="ft-logo">Fin<b>Scope</b></div><nav class="ft-l" aria-label="Навигация"><button type="button" data-go="home">Главная</button><button type="button" data-go="about">О нас</button><button type="button" data-go="legal">Отказ от ответственности и источники</button></nav></div><p>Информация на сайте носит справочный характер и не является инвестиционной рекомендацией. Инвестиции связаны с риском потери вложенных средств. Данные могут содержать ошибки и устаревать, проверяйте ключевые цифры в первоисточниках.</p><p class="ft-adv">FinScope не является инвестиционным советником, решение остаётся за тобой.</p><div class="ft-bot"><span>Источники: отчёты SEC EDGAR, Twelve Data, открытые биржевые и новостные сайты.</span><span>© 2026 FinScope</span></div></footer>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
