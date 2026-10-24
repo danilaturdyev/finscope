@@ -171,7 +171,7 @@ a{color:var(--ac)}.src{font-size:14px;padding:8px 0;border-top:1px solid var(--b
 .search button{flex:none;border:0;border-radius:99px;padding:12px 22px;font:inherit;font-weight:800;font-size:15px;color:#fff;background:linear-gradient(90deg,var(--ac),var(--ac2));cursor:pointer}
 .sg{margin-top:8px;background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:6px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 .sg button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:transparent;color:var(--tx);font:inherit;padding:10px 12px;border-radius:14px;cursor:pointer}
-.sg button:hover{background:var(--chip)}.sg img{width:36px;height:36px;border-radius:12px;flex:none}.sg b{display:block;font-size:15px}.sg span{color:var(--mu);font-size:13px}
+.sg button:hover{background:var(--chip)}.sg img{width:36px;height:36px;border-radius:12px;flex:none}.sg .lav{width:36px;height:36px;border-radius:12px;flex:none;display:grid;place-items:center;color:#fff;font-weight:800;letter-spacing:-.02em;overflow:hidden}.sg b{display:block;font-size:15px}.sg span{color:var(--mu);font-size:13px}
 .hint{margin-top:12px;font-size:14px;color:var(--mu);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .ex{border:0;background:var(--chip);color:var(--tx);font:inherit;font-weight:700;font-size:13px;padding:6px 12px;border-radius:99px;cursor:pointer}
 .msg{margin-top:12px;padding:12px 14px;border-radius:16px;background:var(--chip);font-size:14px}
@@ -1108,6 +1108,7 @@ function go(v){
 }
 function openStock(t){['sg','sm','sg2','sm2'].forEach(i=>$(i).hidden=true);$('q2').value='';const T=t||(REG[0]&&REG[0].t);if(T)location.hash='#/'+T}
 async function loadReg(){REG=await getJSON(DATA_BASE+'stocks.json?'+Math.floor(Date.now()/120000));if(!Array.isArray(REG))REG=[];buildRX(Object.assign({},...REG.map(x=>x.en||{})))}
+function tkAv(t){let h=0;for(const c of t)h=(h*31+c.charCodeAt(0))%360;const n=t.length,fs=n<=2?15:n===3?13:n===4?11:10;return `<i class="lav" aria-hidden="true" style="background:linear-gradient(135deg,hsl(${h} 62% 46%),hsl(${(h+40)%360} 62% 36%));font-size:${fs}px;font-style:normal">${t.slice(0,4)}</i>`}
 function bindSearch(qi,fi,gi,mi){
  const Q=$(qi),G=$(gi),M=$(mi);let tm=0,seq=0,rem=[];
  const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -1115,7 +1116,7 @@ function bindSearch(qi,fi,gi,mi){
   const loc=findStocks(Q.value),have=new Set(loc.map(x=>x.t)),more=rem.filter(x=>!have.has(x.t)&&!REG.some(s=>s.t===x.t));
   if(!loc.length&&!more.length){G.hidden=true;return}
   G.innerHTML=loc.map(x=>`<button type="button" data-t="${x.t}">${x.logo?`<img${x.logoShape==='round'?' class="round"':''} alt="" src="${logoUrl(x)}">`:''}<div><b>${x.t} · ${x.name}</b><span>${x.sub||''}</span></div></button>`).join('')+
-   more.map(x=>`<button type="button" data-u="${esc(x.t)}" data-n="${esc(x.name)}"><div><b>${esc(x.t)} · ${esc(x.name)}</b><span>${x.mic==='XNAS'?'Nasdaq':x.mic==='XNYS'?'NYSE':'Cboe'} · разбора пока нет</span></div></button>`).join('');
+   more.map(x=>`<button type="button" data-u="${esc(x.t)}" data-n="${esc(x.name)}">${tkAv(x.t)}<div><b>${esc(x.t)} · ${esc(x.name)}</b><span>${x.mic==='XNAS'?'Nasdaq':x.mic==='XNYS'?'NYSE':'Cboe'} · разбора пока нет</span></div></button>`).join('');
   G.hidden=false;
  };
  const note=(t,n)=>{G.hidden=true;M.hidden=false;M.textContent='«'+n+'» ('+t+') есть на американской бирже, но подробного разбора на сайте пока нет.'};
