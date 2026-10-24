@@ -1131,6 +1131,7 @@ function bindSearch(qi,fi,gi,mi){
  const Q=$(qi),G=$(gi),M=$(mi);let tm=0,seq=0,rem=[];
  const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const draw=()=>{
+  if(Q.value.trim().length<2){G.hidden=true;return}
   const loc=findStocks(Q.value),have=new Set(loc.map(x=>x.t)),more=rem.filter(x=>!have.has(x.t)&&!REG.some(s=>s.t===x.t));
   if(!loc.length&&!more.length){G.hidden=true;return}
   G.innerHTML=loc.map(x=>`<button type="button" data-t="${x.t}">${x.logo?`<img${x.logoShape==='round'?' class="round"':''} alt="" src="${logoUrl(x)}">`:''}<div><b>${x.t} · ${x.name}</b><span>${x.sub||''}</span></div></button>`).join('')+
@@ -1139,8 +1140,9 @@ function bindSearch(qi,fi,gi,mi){
  };
  const ask=async q=>{const k=++seq;try{const r=await fetch('/api/universe?q='+encodeURIComponent(q));if(!r.ok)throw 0;const j=await r.json();if(k!==seq)return null;rem=j.items||[];return rem}catch(e){return null}};
  Q.addEventListener('input',()=>{
-  M.hidden=true;draw();clearTimeout(tm);const q=Q.value.trim();
-  if(q.length<2){rem=[];seq++;return}
+  M.hidden=true;clearTimeout(tm);const q=Q.value.trim();
+  if(q.length<2){rem=[];seq++;draw();return}
+  draw();
   tm=setTimeout(async()=>{if(await ask(q))draw()},220);
  });
  G.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;openStock(b.dataset.u||b.dataset.t)});
