@@ -133,6 +133,24 @@ try {
     if (age > 3) warns.push('data/news.json: новости не обновлялись ' + Math.round(age) + ' дн.');
   }
 } catch (e) { err('data/news.json', 'нет файла или он повреждён'); }
+// лидеры рынка для главной (data/movers.json): необязательный файл, ежедневно обновляется задачей
+if (fs.existsSync(new URL('../data/movers.json', import.meta.url))) {
+  try {
+    const m = read('data/movers.json');
+    if (!ISO.test(m.asof || '')) err('data/movers.json', 'asof должен быть датой');
+    for (const k of ['up', 'dn']) {
+      const L = m[k];
+      if (!Array.isArray(L) || L.length < 3 || L.length > 10) { err('data/movers.json', k + ': нужно от 3 до 10 компаний'); continue; }
+      L.forEach((x, i) => {
+        const f = 'data/movers.json ' + k + '[' + i + ']';
+        if (!/^[A-Z][A-Z0-9.\-]{0,9}$/.test(x.t || '')) err(f, 't: неверный тикер');
+        if (!x.name || x.name.length > 40) err(f, 'name: нужно короткое название');
+        if (!(x.p >= 5)) err(f, 'p: цена должна быть числом от 5');
+        if (!Number.isFinite(x.c) || (k === 'up' ? x.c <= 0 : x.c >= 0) || Math.abs(x.c) > 100) err(f, 'c: процент изменения не того знака или слишком большой');
+      });
+    }
+  } catch (e) { err('data/movers.json', 'файл повреждён'); }
+}
 warns.forEach(w => console.log('ВНИМАНИЕ', w));
 if (errs.length) { console.log('ОШИБКИ:\n' + errs.map(e => ' - ' + e).join('\n')); process.exit(1); }
 console.log('OK: данные в порядке (' + (reg ? reg.length : 0) + ' акц.)');
