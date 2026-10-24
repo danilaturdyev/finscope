@@ -84,14 +84,19 @@ async function build(i, env, SYMBOL, MIC, pcNeeded) {
 async function series(u, env, ctx) {
   const i = Math.max(0, Math.min(2, parseInt(u.searchParams.get('r') || '0', 10) || 0));
   const T = (u.searchParams.get('t') || 'MARA').toUpperCase();
-  if (!(await allowed(T))) return new Response(JSON.stringify({ error: 'неизвестный тикер' }), { status: 404, headers: JSONH });
+  let uRow = null;
+  if (!(await allowed(T))) { // не из реестра: разрешаем акции со списка американских бирж (для карточки без разбора)
+    const rows = await universe(env, ctx);
+    uRow = rows && rows.find(r => r[0] === T);
+    if (!uRow) return new Response(JSON.stringify({ error: 'неизвестный тикер' }), { status: 404, headers: JSONH });
+  }
   if (!env.TD_KEY) return new Response(JSON.stringify({ error: 'TD_KEY не задан' }), { status: 503, headers: JSONH });
   const cache = caches.default;
   const fresh = new Request(u.origin + '/__fresh/' + T + '/' + i), stale = new Request(u.origin + '/__stale/' + T + '/' + i);
   const hit = await cache.match(fresh);
   if (hit) return hit;
   try {
-    const ex = await tdExtra(T);
+    const ex = uRow ? { sym: T.replace(/-/g, '.'), mic: uRow[2] === 'BATS' ? '' : '&mic_code=' + uRow[2] } : await tdExtra(T);
     // Если биржа из stocks.json не отдаёт данные (например, акция торгуется на другой бирже в источнике), пробуем соседние. Валюта должна быть USD.
     const mics = ex.mic ? [micOk[T], ex.mic, '&mic_code=XNAS', '&mic_code=XNYS', ''].filter((m, k, a) => m !== undefined && a.indexOf(m) === k) : [''];
     let data = null, lastErr = null;
@@ -361,6 +366,48 @@ async function uni(u, env, ctx) {
   const items = uniSearch(rows, (u.searchParams.get('q') || '').slice(0, 40), 8);
   return new Response(JSON.stringify({ ok: true, items }), { headers: H });
 }
+// Запрос полного разбора: проверяем тикер по списку бирж, гасим дубли и лимит в KV и запускаем задачу (routine) через её API.
+// Нужны секреты ROUTINE_TOKEN и ROUTINE_ID; дневной лимит REQ_DAILY (по умолчанию 10).
+async function reqApi(req, u, env, ctx) {
+  const H = { ...JSONH, 'cache-control': 'no-store' };
+  const J = (o, st) => new Response(JSON.stringify(o), { status: st || 200, headers: H });
+  const T = (u.searchParams.get('t') || '').toUpperCase();
+  if (!/^[A-Z][A-Z0-9.\-]{0,9}$/.test(T)) return J({ error: 'bad_ticker' }, 400);
+  if (!env.STATS) return J({ error: 'not_configured' }, 503);
+  const key = 'req:' + T;
+  let rec = null;
+  try { rec = await env.STATS.get(key, 'json'); } catch (e) {}
+  if (req.method !== 'POST') return J({ state: rec ? 'queued' : 'none', at: rec ? rec.at : null });
+  if (req.headers.get('origin') !== u.origin) return J({ error: 'forbidden' }, 403);
+  if (await allowed(T)) return J({ state: 'ready' });
+  if (rec) return J({ state: 'queued', at: rec.at });
+  if (!env.ROUTINE_TOKEN || !env.ROUTINE_ID) return J({ error: 'not_configured' }, 503);
+  const rows = await universe(env, ctx);
+  const row = rows && rows.find(r => r[0] === T);
+  if (!row) return J({ error: 'unknown_ticker' }, 404);
+  const day = new Date().toISOString().slice(0, 10), dk = 'reqd:' + day, cap = parseInt(env.REQ_DAILY, 10) || 10;
+  let n = 0;
+  try { n = parseInt((await env.STATS.get(dk)) || '0', 10) || 0; } catch (e) {}
+  if (n >= cap) return J({ error: 'limit' }, 429);
+  const at = Date.now();
+  try {
+    await env.STATS.put(key, JSON.stringify({ at }), { expirationTtl: 4 * 3600 }); // сначала метка, чтобы второй запрос не запустил дубль
+    await env.STATS.put(dk, String(n + 1), { expirationTtl: 2 * 86400 });
+  } catch (e) { return J({ error: 'kv' }, 503); }
+  try {
+    const name = row[1].replace(/[|\r\n]/g, ' ').slice(0, 100);
+    const r = await fetch('https://api.anthropic.com/v1/claude_code/routines/' + encodeURIComponent(env.ROUTINE_ID) + '/fire', {
+      method: 'POST',
+      headers: { authorization: 'Bearer ' + env.ROUTINE_TOKEN, 'anthropic-version': '2026-10-21', 'content-type': 'application/json' },
+      body: JSON.stringify({ text: 'NEW:' + T + '|' + name + '|' + row[2] }),
+    });
+    if (!r.ok) throw new Error('routine ' + r.status);
+  } catch (e) {
+    try { await env.STATS.delete(key); await env.STATS.put(dk, String(n), { expirationTtl: 2 * 86400 }); } catch (e2) {}
+    return J({ error: 'fire_failed', why: String(e.message || e).slice(0, 80) }, 502);
+  }
+  return J({ state: 'queued', at });
+}
 export default {
   async fetch(req, env, ctx) {
     const u = new URL(req.url);
@@ -369,6 +416,7 @@ export default {
     if (u.pathname === '/api/quotes') return quotes(u, env, ctx);
     if (u.pathname === '/api/chat') return chat(req, env, ctx);
     if (u.pathname === '/api/universe') return uni(u, env, ctx);
+    if (u.pathname === '/api/request') return reqApi(req, u, env, ctx);
     if (u.pathname === '/api/hit') return hit(u, env);
     if (u.pathname === '/stats') return stats(u, env);
     if (u.pathname.startsWith('/s/')) return share(u, u.pathname.slice(3).toUpperCase());
