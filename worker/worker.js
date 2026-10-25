@@ -408,6 +408,60 @@ async function reqApi(req, u, env, ctx) {
   }
   return J({ state: 'queued', at });
 }
+// Лидеры рынка: воркер сам берёт общий список акций Nasdaq (api.nasdaq.com), фильтрует и кэширует.
+// Фильтры: капитализация от 2 млрд $, цена от 5 $, объём от 500 тыс., без фондов, варрантов, прав и привилегированных.
+let MVC = null, MVC_AT = 0, MV_ERR = '';
+const MVBAD = /\b(Warrants?|Rights?|Units?|Preferred|Notes?|Depositary Shares representing|Subordinated)\b/i;
+function mvName(n) {
+  return String(n).replace(/\s+(Common Stock|Class [A-Z] (Common|Ordinary) (Stock|Shares)|Ordinary Shares|American Depositary Shares?|Common Shares?).*$/i, '')
+    .replace(/[,.]?\s+(Inc|Corp|Corporation|Incorporated|Company|Holdings?|Ltd|Limited|plc|PLC|N\.V|S\.A|Co)\.?$/i, '')
+    .replace(/[,.]?\s+(Inc|Corp|Corporation|Incorporated|Holdings?|Ltd|Limited|plc|PLC)\.?$/i, '').trim().slice(0, 30);
+}
+function mvNum(x) { const v = parseFloat(String(x == null ? '' : x).replace(/[$,%\s]/g, '').replace(/,/g, '')); return isFinite(v) ? v : NaN; }
+function mvBuild(rows) {
+  const ok = [];
+  for (const r of rows || []) {
+    const t = String(r.symbol || '').trim().toUpperCase().replace(/\//g, '-');
+    if (!/^[A-Z][A-Z0-9.\-]{0,9}$/.test(t) || /-(WS|W|U|R)$/.test(t)) continue;
+    const name = String(r.name || '');
+    if (MVBAD.test(name) || ETFRX.test(name)) continue;
+    const p = mvNum(r.lastsale), c = mvNum(r.pctchange), cap = mvNum(r.marketCap), vol = mvNum(r.volume);
+    if (!(p >= 5) || !isFinite(c) || !(cap >= 2e9) || !(vol >= 5e5) || Math.abs(c) > 60) continue;
+    ok.push({ t, name: mvName(name) || t, p: Math.round(p * 100) / 100, c: Math.round(c * 100) / 100 });
+  }
+  const up = ok.filter(x => x.c > 0).sort((a, b) => b.c - a.c).slice(0, 5);
+  const dn = ok.filter(x => x.c < 0).sort((a, b) => a.c - b.c).slice(0, 5);
+  return { up, dn, n: ok.length };
+}
+async function movers(u, env, ctx) {
+  const H = { 'content-type': 'application/json; charset=utf-8', 'access-control-allow-origin': '*', 'cache-control': 'public, max-age=120' };
+  const now = Date.now(), e = etParts(now / 1000);
+  const wk = !['Sat', 'Sun'].includes(e.wd), mins = e.h * 60 + e.m;
+  const live = wk && mins >= 9 * 60 + 30 && mins < 16 * 60 + 15;
+  const ttl = (live ? 10 * 60 : 3 * 3600) * 1000;
+  if (MVC && now - MVC_AT < ttl) return new Response(JSON.stringify(MVC), { headers: H });
+  try {
+    const r = await fetch('https://api.nasdaq.com/api/screener/stocks?tableonly=true&limit=10000&offset=0&download=true', {
+      headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36', accept: 'application/json, text/plain, */*', origin: 'https://www.nasdaq.com', referer: 'https://www.nasdaq.com/' },
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    const rows = j && j.data && (j.data.rows || (j.data.table && j.data.table.rows));
+    if (!rows || rows.length < 1000) throw new Error('short ' + (rows ? rows.length : 0));
+    const m = mvBuild(rows);
+    if (m.up.length < 3 || m.dn.length < 3) throw new Error('few ' + m.up.length + '/' + m.dn.length);
+    // дата сессии по Нью-Йорку: в выходные и до открытия понедельника это пятница, до открытия будня — вчера
+    let d = new Date(now), back = 0;
+    if (e.wd === 'Sat') back = 1; else if (e.wd === 'Sun') back = 2; else if (mins < 9 * 60 + 30) back = e.wd === 'Mon' ? 3 : 1;
+    const asof = new Date(Date.parse(e.date + 'T12:00:00Z') - back * 86400e3).toISOString().slice(0, 10);
+    MVC = { ok: true, live, asof, at: now, up: m.up, dn: m.dn }; MVC_AT = now; MV_ERR = '';
+    return new Response(JSON.stringify(MVC), { headers: H });
+  } catch (err) {
+    MV_ERR = String(err && err.message || err).slice(0, 80);
+    if (MVC) return new Response(JSON.stringify(MVC), { headers: H });
+    return new Response(JSON.stringify({ ok: false, why: MV_ERR }), { status: 503, headers: { ...H, 'cache-control': 'no-store' } });
+  }
+}
 export default {
   async fetch(req, env, ctx) {
     const u = new URL(req.url);
@@ -415,6 +469,7 @@ export default {
     if (u.pathname === '/api/series') return series(u, env, ctx);
     if (u.pathname === '/api/quotes') return quotes(u, env, ctx);
     if (u.pathname === '/api/chat') return chat(req, env, ctx);
+    if (u.pathname === '/api/movers') return movers(u, env, ctx);
     if (u.pathname === '/api/universe') return uni(u, env, ctx);
     if (u.pathname === '/api/request') return reqApi(req, u, env, ctx);
     if (u.pathname === '/api/hit') return hit(u, env);

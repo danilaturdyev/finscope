@@ -818,7 +818,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('botp').hidden&&
 
 /* ===== Главная: карточки акций, фильтр по отрасли, сортировка ===== */
 let MV=null,QT={},QSER={},LASTQ=0,QLIVE=0,QCL=0,MKF=-1,MKS='n',MKV='h',MKO=false;
-async function loadMovers(){try{const j=await getJSON(DATA_BASE+'movers.json?'+Math.floor(Date.now()/120000));MV=j&&((j.up||[]).length||(j.dn||[]).length)?j:null}catch(e){MV=null}}
+async function loadMovers(){
+ try{const r=await fetch('/api/movers');if(r.ok){const j=await r.json();if(j&&j.ok&&(j.up||[]).length&&(j.dn||[]).length){MV=j;return}}}catch(e){}
+ try{const j=await getJSON(DATA_BASE+'movers.json?'+Math.floor(Date.now()/120000));if(j&&((j.up||[]).length||(j.dn||[]).length)){MV=j;return}}catch(e){}
+}
 async function loadQuotes(){try{const q=await getJSON(DATA_BASE+'quotes.json?'+Math.floor(Date.now()/120000));QT=q&&typeof q==='object'?q:{}}catch(e){QT={}}}
 async function liveQuotes(){
  try{
@@ -888,7 +891,8 @@ function hmRender(){
   const q=QT[x.t],c=chg(x);
   const px=q?'$'+q.c.toFixed(2):'';
   return `<a class="mkc" href="/${x.t}" data-t="${x.t}">${logo(x)}<div class="mkb"><b>${x.name}</b><span>${x.t}${x.sector?' · '+sName(x):''}</span></div><div class="mkp"><b>${px}</b><span class="${c==null?'':c>=0?'pos':'neg'}">${fmt(c)}</span></div></a>`}).join('');
- if(MK&&MV.asof){const dd=new Date(MV.asof+'T12:00:00').toLocaleDateString(en?'en-GB':'ru-RU',{day:'numeric',month:'long'});$('mkn').textContent=en?'Largest US stocks by move in the session of '+dd+' (market cap from $2B, price from $5). Updated once a day.':'Крупные американские акции по итогам сессии '+dd+' (капитализация от 2 млрд $, цена от 5 $). Обновляется раз в день.'}
+ if(MK&&MV.live){$('mkn').textContent=en?'Market leaders right now, data delayed by up to 15 minutes (market cap from $2B, price from $5).':'Лидеры рынка прямо сейчас, данные с задержкой до 15 минут (капитализация от 2 млрд $, цена от 5 $).'}
+ else if(MK&&MV.asof){const dd=new Date(MV.asof+'T12:00:00').toLocaleDateString(en?'en-GB':'ru-RU',{day:'numeric',month:'long'});$('mkn').textContent=en?'Largest US stocks by move in the session of '+dd+' (market cap from $2B, price from $5).':'Крупные американские акции по итогам сессии '+dd+' (капитализация от 2 млрд $, цена от 5 $).'}
 }
 $('mkf').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.k;
  if(k==='more'){MKO=!MKO;hmRender();return}
@@ -1238,7 +1242,7 @@ window.addEventListener('hashchange',route);
 (async()=>{
  newsInit();
  try{await loadReg()}catch(e){REG=[]}
- homeTexts();loadQuotes().then(()=>{hmRender();liveQuotes()});loadMovers().then(hmRender);hmRender();
+ homeTexts();loadQuotes().then(()=>{hmRender();liveQuotes()});loadMovers().then(hmRender);setInterval(()=>{if(!document.hidden)loadMovers().then(hmRender)},300000);hmRender();
  if(!REG.length){const m=$('sm');m.hidden=false;m.textContent='Не удалось загрузить список акций. Обнови страницу чуть позже.';return}
  if(location.hash.replace(/^#\/?/,'')){await route()}
  else{
