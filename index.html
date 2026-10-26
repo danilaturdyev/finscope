@@ -892,13 +892,6 @@ function hmRender(){
   const row=(t,col,l)=>l.length?`<div class="mk-rh"><h3><i style="background:${col}"></i>${t}</h3></div><div class="mk-row">${l.map(card).join('')}</div>`:'';
   rows=MK?mrow(en?'Rising today':'Растут сегодня','var(--up)',MV.up)+mrow(en?'Falling today':'Падают сегодня','var(--dn)',MV.dn):row(en?'Rising today':'Растут сегодня','var(--up)',up)+row(en?'Falling today':'Падают сегодня','var(--dn)',dn);
  }
- if(home){const td0=new Date(),td=td0.toISOString().slice(0,10),ago=n=>new Date(td0-n*864e5).toISOString().slice(0,10),nw=[];
-  REG.forEach(x=>{const q=QT[x.t]||{},c=chg(x);
-   if(q.a&&q.a>=ago(14))nw.push([3,`<a class="cl" href="/${x.t}" data-t="${x.t}"><b>${en?'New analysis':'Новый разбор'}</b><span>${x.t} · ${escH(x.name)}</span></a>`]);
-   if(c!=null&&Math.abs(c)>=3)nw.push([c>0?1:2,`<a class="cl" href="/${x.t}" data-t="${x.t}"><b class="${c>0?'pos':'neg'}">${fmt(c)}</b><span>${x.t} · ${en?'move in the last session':'движение за последнюю сессию'}</span></a>`]);
-   (q.ev||[]).forEach(e=>{if(e[0]===td||e[0]===ago(-1))nw.push([0,`<a class="cl" href="/${x.t}" data-t="${x.t}"><b>${e[0]===td?(en?'Today':'Сегодня'):(en?'Tomorrow':'Завтра')}</b><span>${x.t} · ${en?'earnings report':'отчёт о прибыли'}</span></a>`])})});
-  nw.sort((a,b)=>a[0]-b[0]);
-  if(nw.length)rows=`<div class="mk-rh"><h3><i style="background:var(--ac2)"></i>${en?"What's new":'Что нового'}</h3></div><div class="cal">`+nw.slice(0,6).map(x=>x[1]).join('')+'</div>'+rows}
  if(MKV==='f'&&FV.length>=2)rows=cmpHtml(FV,en);
  $('mkr').innerHTML=rows;
  // сетка карточек: в разделе «Все акции» и в секторе
