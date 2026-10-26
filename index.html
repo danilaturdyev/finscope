@@ -864,7 +864,7 @@ function hmRender(){
  $('mkf').hidden=!h;$('mkf').innerHTML=h;
  const nt=$('mkn');if(nt){nt.textContent=QLIVE&&!QCL?(en?'Prices updated at ':'Цены обновлены в ')+new Date(QLIVE).toLocaleTimeString(en?'en-GB':'ru-RU',{hour:'2-digit',minute:'2-digit'})+(en?', with a delay of a few minutes.':', с задержкой в несколько минут.'):(en?'Prices at the close of the last trading session.':'Цены на закрытие последней торговой сессии.')}
  document.querySelectorAll('#mks button').forEach(b=>{const on=b.dataset.s===MKS;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
- const logo=x=>x.logo?`<img${x.logoShape==='round'?' class="round"':''} alt="" loading="lazy" src="${logoUrl(x)}">`:`<span class="mkl">${x.t[0]}</span>`;
+ const logo=x=>`<img${x.logoShape==='round'?' class="round"':''} alt="" loading="lazy" data-l="${x.t[0]}" onerror="${lgErr}" src="${logoUrl(x)}">`;
  const fmt=c=>c==null?'':(c>=0?'+':'−')+Math.abs(c).toFixed(2).replace('.',en?'.':',')+'%';
  const home=MKV==='h',MK=!!MV&&home;
  $('mks').hidden=home;
@@ -1034,7 +1034,8 @@ setInterval(mkRender,30000);
 
 /* ===== Данные акций: data/stocks.json (список) и data/<ТИКЕР>.json (одна акция) ===== */
 async function getJSON(u){const pp=window.__pre&&window.__pre[u];if(pp){delete window.__pre[u];try{return await pp}catch(e){}}const r=await fetch(u,{cache:'no-cache'});if(!r.ok)throw new Error(r.status);return r.json()}
-const logoUrl=x=>x&&x.logo?DATA_BASE+x.logo:'';
+const logoUrl=x=>x&&x.logo?DATA_BASE+x.logo:(x&&x.t?'/logo/'+x.t+'.png':'');
+const lgErr="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'mkl',textContent:this.dataset.l}))";
 function setStockData(S){
  S.close=S.daily[S.daily.length-1][4];
  CUR=S;TABS=S.tabs.map(t=>[t.k,t.name]);EXT=S.ext||null;DAILY=S.daily;SPARSE=S.sparse||[];
@@ -1072,7 +1073,7 @@ function evtRender(){
 }
 function renderStatic(){
  const S=CUR;
- $('heroLogo').outerHTML=S.logo?`<img class="avl${S.logoShape==='round'?' round':''}" id="heroLogo" alt="Логотип ${S.t}" src="${logoUrl(S)}">`:`<div class="av" id="heroLogo">${S.t[0]}</div>`;
+ $('heroLogo').outerHTML=`<img class="avl${S.logoShape==='round'?' round':''}" id="heroLogo" alt="Логотип ${S.t}" src="${logoUrl(S)}" onerror="this.onerror=null;this.outerHTML='<div class=&quot;av&quot; id=&quot;heroLogo&quot;>${S.t[0]}</div>'">`;
  $('hName').textContent=S.name;$('hSub').textContent=S.sub||'';
  $('price').textContent='$'+S.close.toFixed(2);
  $('pills').innerHTML=(S.pills||[]).map(p=>`<span class="pill${p.c?' '+p.c:''}">${p.t}</span>`).join('');
@@ -1150,7 +1151,7 @@ function bindSearch(qi,fi,gi,mi){
   if(Q.value.trim().length<2){G.hidden=true;return}
   const loc=findStocks(Q.value),have=new Set(loc.map(x=>x.t)),more=rem.filter(x=>!have.has(x.t)&&!REG.some(s=>s.t===x.t));
   if(!loc.length&&!more.length){G.hidden=true;return}
-  G.innerHTML=loc.map(x=>`<button type="button" data-t="${x.t}">${x.logo?`<img${x.logoShape==='round'?' class="round"':''} alt="" src="${logoUrl(x)}">`:''}<div><b>${x.t} · ${x.name}</b><span>${x.sub||''}</span></div></button>`).join('')+
+  G.innerHTML=loc.map(x=>`<button type="button" data-t="${x.t}"><img${x.logoShape==='round'?' class="round"':''} alt="" src="${logoUrl(x)}" onerror="this.remove()"><div><b>${x.t} · ${x.name}</b><span>${x.sub||''}</span></div></button>`).join('')+
    more.map(x=>`<button type="button" data-u="${esc(x.t)}" data-n="${esc(x.name)}">${tkAv(x.t)}<div><b>${esc(x.t)} · ${esc(x.name)}</b><span>${x.mic==='XNAS'?'Nasdaq':x.mic==='XNYS'?'NYSE':'Cboe'} · ${pT('разбора пока нет','no analysis yet')}</span></div></button>`).join('');
   G.hidden=false;
  };

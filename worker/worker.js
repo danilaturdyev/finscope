@@ -472,6 +472,8 @@ export default {
     if (u.pathname === '/api/movers') return movers(u, env, ctx);
     if (u.pathname === '/api/universe') return uni(u, env, ctx);
     if (u.pathname === '/api/request') return reqApi(req, u, env, ctx);
+    { const m = u.pathname.match(/^\/logo\/([A-Z][A-Z0-9.\-]{0,9})\.png$/);
+      if (m) return logoProxy(m[1], ctx); }
     if (u.pathname === '/api/hit') return hit(u, env);
     if (u.pathname === '/stats') return stats(u, env);
     if (u.pathname.startsWith('/s/')) return share(u, u.pathname.slice(3).toUpperCase());
@@ -486,3 +488,19 @@ export default {
     return new Response('Not found', { status: 404 });
   },
 };
+
+// Логотип компании без своего файла: берём из открытого CDN и кэшируем на границе Cloudflare
+async function logoProxy(t, ctx) {
+  const key = new Request('https://finscope.uk/logo/' + t + '.png');
+  const hit = await caches.default.match(key);
+  if (hit) return hit;
+  let res = null;
+  try {
+    const r = await fetch('https://cdn.alphavantage.co/logos/' + t + '.png', { cf: { cacheTtl: 2592000, cacheEverything: true } });
+    const ct = r.headers.get('content-type') || '';
+    if (r.ok && ct.startsWith('image/')) res = new Response(r.body, { headers: { 'content-type': ct, 'cache-control': 'public, max-age=2592000' } });
+  } catch (e) {}
+  if (!res) return new Response('', { status: 404, headers: { 'cache-control': 'public, max-age=3600' } });
+  ctx.waitUntil(caches.default.put(key, res.clone()));
+  return res;
+}
