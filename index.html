@@ -900,8 +900,6 @@ function hmRender(){
   nw.sort((a,b)=>a[0]-b[0]);
   if(nw.length)rows=`<div class="mk-rh"><h3><i style="background:var(--ac2)"></i>${en?"What's new":'Что нового'}</h3></div><div class="cal">`+nw.slice(0,6).map(x=>x[1]).join('')+'</div>'+rows}
  if(MKV==='f'&&FV.length>=2)rows=cmpHtml(FV,en);
- if(home){const td=new Date().toISOString().slice(0,10),ev=[];REG.forEach(x=>{((QT[x.t]||{}).ev||[]).forEach(e=>{if(e[0]>=td)ev.push([e[0],x])})});ev.sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:0);
-  if(ev.length)rows+=`<div class="mk-rh"><h3><i style="background:var(--ac)"></i>${en?'Upcoming earnings':'Ближайшие отчёты'}</h3></div><div class="cal">`+ev.slice(0,8).map(([d,x])=>`<a class="cl" href="/${x.t}" data-t="${x.t}"><b>${new Date(d+'T12:00:00').toLocaleDateString(en?'en-GB':'ru-RU',{day:'numeric',month:'short'}).replace('.','')}</b><span>${x.t} · ${escH(x.name)}</span></a>`).join('')+'</div>'}
  $('mkr').innerHTML=rows;
  // сетка карточек: в разделе «Все акции» и в секторе
  let L=home?[]:REG.filter(x=>MKV==='f'?FV.includes(x.t):(MKV!=='s'||x.sector===secs[MKF]));
