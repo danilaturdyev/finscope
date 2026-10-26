@@ -71,5 +71,3 @@
 ## Цены скриптом (GitHub Actions)
 `.github/workflows/prices.yml` по будням в 21:30 UTC запускает `tools/update_prices.mjs`: дописывает дневные свечи, правит закрытие и дневной диапазон, пересобирает `quotes.json`. Нужен секрет репозитория `TD_KEY` (Settings → Secrets and variables → Actions). Тексты разбора скрипт не трогает.
 
-## Telegram-бот
-Код в `worker/worker.js` (раздел «Telegram-бот»). Нужен секрет Cloudflare `TG_TOKEN` (токен от @BotFather). После деплоя один раз открыть `https://finscope.uk/api/tg?setup=1&key=<STATS_KEY>`, затем написать боту `/start`. Бот личный: подписчик — первый, кто написал `/start`. Оповещения идут по расписанию (cron в `wrangler.jsonc`) из `data/quotes.json`: движение за день больше порога и «завтра/сегодня отчёт». Команды: /list, /watch, /unwatch, /threshold, /test, /stop.

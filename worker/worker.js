@@ -475,7 +475,6 @@ async function movers(u, env, ctx) {
   }
 }
 export default {
-  async scheduled(ev, env, ctx) { ctx.waitUntil(tgDaily(env)); },
   async fetch(req, env, ctx) {
     const u = new URL(req.url);
     if (u.hostname === 'www.finscope.uk') return Response.redirect(SITE + u.pathname + u.search, 301);
@@ -490,7 +489,6 @@ export default {
     { const m = u.pathname.match(/^\/ogimg\/([A-Z][A-Z0-9.\-]{0,9})\.png$/); if (m) return ogImg(m[1]); }
     if (u.pathname.startsWith('/data/')) return dataProxy(u.pathname.slice(6));
     if (u.pathname === '/api/fin') return fin(u, env, ctx);
-    if (u.pathname === '/api/tg') return tgApi(req, u, env);
     if (u.pathname === '/api/hit') return hit(u, env);
     if (u.pathname === '/stats') return stats(u, env);
     if (u.pathname.startsWith('/s/')) return share(u, u.pathname.slice(3).toUpperCase());
@@ -542,75 +540,6 @@ async function ogImg(T) {
     try { const r = await fetch(BASE + f, { cf: { cacheTtl: 3600, cacheEverything: true } }); if (r.ok) return new Response(r.body, { headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=3600' } }); } catch (e) {}
   }
   return new Response('Not found', { status: 404 });
-}
-
-// ===== Telegram-бот: личные оповещения (сильное движение за день, завтра/сегодня отчёт) =====
-// Секреты Cloudflare: TG_TOKEN (токен от @BotFather). Для проверки webhook используется STATS_KEY.
-// Один раз открыть: https://finscope.uk/api/tg?setup=1&key=<STATS_KEY> — бот подключится к сайту.
-// Подписчик один: первый, кто написал боту /start. Данные о подписке лежат в KV (ключ tg:subs).
-const TGH = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' };
-async function tgCall(env, m, body) {
-  const r = await fetch('https://api.telegram.org/bot' + env.TG_TOKEN + '/' + m, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
-  return r.json().catch(() => ({}));
-}
-const tgSend = (env, chat, text) => tgCall(env, 'sendMessage', { chat_id: chat, text, parse_mode: 'HTML', disable_web_page_preview: true });
-async function tgSubs(env) { try { return (await env.STATS.get('tg:subs', 'json')) || {}; } catch (e) { return {}; } }
-const tgSave = (env, s) => env.STATS.put('tg:subs', JSON.stringify(s));
-async function tgQuotes() { try { const r = await fetch(BASE + 'data/quotes.json', { cf: { cacheTtl: 60, cacheEverything: true } }); if (r.ok) return await r.json(); } catch (e) {} return {}; }
-async function tgApi(req, u, env) {
-  if (!env.TG_TOKEN || !env.STATS) return new Response(JSON.stringify({ ok: false, why: 'TG_TOKEN не задан' }), { headers: TGH });
-  const secret = env.TG_SECRET || env.STATS_KEY || '';
-  if (req.method === 'GET') {
-    if (u.searchParams.get('setup') !== '1' || !env.STATS_KEY || u.searchParams.get('key') !== env.STATS_KEY) return new Response('Not found', { status: 404 });
-    const r = await tgCall(env, 'setWebhook', { url: SITE + '/api/tg', secret_token: secret, allowed_updates: ['message'] });
-    return new Response(JSON.stringify({ ok: !!r.ok, telegram: r.description || 'webhook установлен' }), { headers: TGH });
-  }
-  if (!secret || req.headers.get('x-telegram-bot-api-secret-token') !== secret) return new Response('Forbidden', { status: 403 });
-  let up = null; try { up = await req.json(); } catch (e) {}
-  const m = up && up.message; if (!m || !m.text || !m.chat) return new Response('ok');
-  const chat = m.chat.id, S = await tgSubs(env);
-  if (!S.owner) { S.owner = chat; S.th = 5; S.w = []; S.on = true; await tgSave(env, S); }
-  if (S.owner !== chat) { await tgSend(env, chat, 'Это личный бот FinScope.'); return new Response('ok'); }
-  const [cmd0, ...args] = m.text.trim().split(/\s+/), cmd = cmd0.toLowerCase().replace(/@.*$/, '');
-  const Q = await tgQuotes(), known = Object.keys(Q);
-  const tk = args.map(x => x.toUpperCase().replace(/[^A-Z0-9.\-]/g, '')).filter(Boolean);
-  let out;
-  if (cmd === '/start' || cmd === '/help') { S.on = true; await tgSave(env, S); out = '<b>FinScope: оповещения</b>\nКаждый день после закрытия биржи пришлю, если акция из твоего списка изменилась на ' + (S.th || 5) + '% и больше, а также за день до отчёта.\n\n/list — что отслеживаю\n/watch AAPL KO — отслеживать только эти акции (пусто = все разобранные)\n/unwatch AAPL — убрать\n/threshold 3 — порог движения в %\n/test — сводка прямо сейчас\n/stop — выключить, /start — включить'; }
-  else if (cmd === '/stop') { S.on = false; await tgSave(env, S); out = 'Оповещения выключены. /start — включить снова.'; }
-  else if (cmd === '/list') out = 'Статус: ' + (S.on ? 'включено' : 'выключено') + '\nПорог: ' + (S.th || 5) + '%\nСписок: ' + ((S.w || []).length ? S.w.join(', ') : 'все разобранные акции (' + known.join(', ') + ')');
-  else if (cmd === '/watch') { const ok = tk.filter(x => known.includes(x)), bad = tk.filter(x => !known.includes(x)); S.w = Array.from(new Set((S.w || []).concat(ok))); await tgSave(env, S); out = (ok.length ? 'Отслеживаю: ' + S.w.join(', ') : 'Напиши тикеры: /watch AAPL KO') + (bad.length ? '\nНет разбора для: ' + bad.join(', ') + ' (сначала запроси разбор на сайте)' : ''); }
-  else if (cmd === '/unwatch') { S.w = (S.w || []).filter(x => !tk.includes(x)); await tgSave(env, S); out = S.w.length ? 'Осталось: ' + S.w.join(', ') : 'Список пуст, слежу за всеми разобранными.'; }
-  else if (cmd === '/threshold') { const n = parseFloat((args[0] || '').replace(',', '.')); if (n >= 0.5 && n <= 50) { S.th = n; await tgSave(env, S); out = 'Порог: ' + n + '%'; } else out = 'Пример: /threshold 3'; }
-  else if (cmd === '/test') out = tgText(Q, S, null, true) || 'Сейчас ничего особенного: движений выше порога нет, отчётов в ближайшие дни нет.';
-  else out = 'Не понял. /help — список команд.';
-  await tgSend(env, chat, out);
-  return new Response('ok');
-}
-// Собирает текст оповещения. mark = функция «уже отправляли?» (для расписания); для /test показывает всё без отметок.
-function tgText(Q, S, seen, test) {
-  const th = S.th || 5, list = (S.w && S.w.length ? S.w : Object.keys(Q)), now = new Date(), day = d => new Date(now.getTime() + d * 864e5).toISOString().slice(0, 10);
-  const lines = [], keys = [];
-  for (const T of list) {
-    const q = Q[T]; if (!q) continue;
-    const ch = q.p ? (q.c / q.p - 1) * 100 : 0, age = (now - new Date(q.d + 'T12:00:00Z')) / 864e5;
-    if (Math.abs(ch) >= th && age < 4) { const k = 'm:' + q.d + ':' + T; if (test || !seen.has(k)) { lines.push((ch > 0 ? '🟢 ' : '🔴 ') + '<a href="' + SITE + '/' + T + '">' + T + '</a> ' + (ch > 0 ? '+' : '−') + Math.abs(ch).toFixed(1).replace('.', ',') + '% за ' + q.d.slice(8) + '.' + q.d.slice(5, 7) + ', $' + q.c.toFixed(2)); keys.push(k); } }
-    for (const e of q.ev || []) {
-      const when = e[0] === day(1) ? 'завтра' : e[0] === day(0) ? 'сегодня' : (test && e[0] > day(0) && e[0] <= day(5)) ? e[0].slice(8) + '.' + e[0].slice(5, 7) : null;
-      const k = 'e:' + e[0] + ':' + T + ':' + (when === 'сегодня' ? 0 : 1);
-      if (when && (test || !seen.has(k))) { lines.push('📅 <a href="' + SITE + '/' + T + '">' + T + '</a>: отчёт ' + when); keys.push(k); }
-    }
-  }
-  if (seen) keys.forEach(k => seen.add(k));
-  return lines.length ? lines.join('\n') : '';
-}
-async function tgDaily(env) {
-  if (!env.TG_TOKEN || !env.STATS) return;
-  const S = await tgSubs(env); if (!S.owner || S.on === false) return;
-  let seen; try { seen = new Set((await env.STATS.get('tg:seen', 'json')) || []); } catch (e) { seen = new Set(); }
-  const text = tgText(await tgQuotes(), S, seen, false);
-  if (!text) return;
-  const r = await tgSend(env, S.owner, '<b>FinScope</b>\n' + text);
-  if (r && r.ok) await env.STATS.put('tg:seen', JSON.stringify(Array.from(seen).slice(-300)));
 }
 
 // ===== Финансы компании из SEC (для карточек без полного разбора): выручка и чистая прибыль по кварталам =====

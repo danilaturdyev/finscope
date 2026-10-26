@@ -7,8 +7,6 @@
   "observability": { "enabled": true },
   // Привязка Workers AI для FinScopeBot (переменная AI)
   "ai": { "binding": "AI" },
-  // Расписание для Telegram-бота: вечером после закрытия биржи (будни и воскресенье) и утром для «сегодня отчёт»
-  "triggers": { "crons": ["15 22 * * 0-5", "0 7 * * 1-5"] },
   // Счётчик просмотров (без cookie): страница статистики /stats?key=STATS_KEY
   "kv_namespaces": [{ "binding": "STATS", "id": "8cb27f8bd76a4661a2939120bd02cf5c" }],
   // Секреты TD_KEY и STATS_KEY остаются в настройках Cloudflare, в репозиторий их не кладут.
