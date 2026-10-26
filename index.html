@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script>(function(){try{var B=window.FS_DATA_BASE||"https://raw.githubusercontent.com/danilaturdyev/finscope/main/data/",k=Math.floor(Date.now()/120000),P=window.__pre={},g=function(u){P[u]=fetch(u,{cache:"no-cache"}).then(function(r){if(!r.ok)throw 0;return r.json()})};g(B+"stocks.json?"+k);var h=decodeURIComponent(location.hash.replace(/^#\/?/,"")).trim().toUpperCase();if(/^[A-Z][A-Z0-9.\-]{0,9}$/.test(h))g(B+h+".json?"+k);for(var u in P)P[u].catch(function(){})}catch(e){}})()</script>
+<script>window.loadLW=function(){if(window.LightweightCharts)return Promise.resolve();return window.__lw||(window.__lw=new Promise(function(ok,no){var e=document.createElement("script");e.src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js";e.onload=ok;e.onerror=function(){window.__lw=null;no()};document.head.appendChild(e)}))};(function(){try{var B=window.FS_DATA_BASE||"/data/",k=Math.floor(Date.now()/120000),P=window.__pre={},g=function(u){P[u]=fetch(u).then(function(r){if(!r.ok)throw 0;return r.json()})};g(B+"stocks.json?"+k);var h=decodeURIComponent(location.hash.replace(/^#\/?/,"")).trim().toUpperCase();if(/^[A-Z][A-Z0-9.\-]{0,9}$/.test(h)){g(B+h+".json?"+k);loadLW().catch(function(){})}for(var u in P)P[u].catch(function(){})}catch(e){}})()</script>
 <script>try{var t=localStorage.getItem("fs_theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <title>FinScope</title>
 <meta name="description" content="FinScope — помощник по инвестициям: отчёты SEC, цены, опционы и новости об акциях простыми словами.">
@@ -423,14 +423,14 @@ h3{font-size:20px}
 <footer class="ft ft2"><div class="ft-top"><div class="ft-logo">Fin<b>Scope</b></div><nav class="ft-l" aria-label="Навигация"><button type="button" data-go="home">Главная</button><button type="button" data-go="about">О нас</button><button type="button" data-go="legal">Отказ от ответственности и источники</button></nav></div><p>Информация на сайте носит справочный характер и не является инвестиционной рекомендацией. Инвестиции связаны с риском потери вложенных средств. Данные могут содержать ошибки и устаревать, проверяйте ключевые цифры в первоисточниках.</p><p class="ft-adv">FinScope не является инвестиционным советником, решение остаётся за тобой.</p><div class="ft-bot"><span>Источники: отчёты SEC EDGAR, Twelve Data, открытые биржевые и новостные сайты.</span><span>© 2026 FinScope</span></div></footer>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+
 <script>
 /* ===== Язык: RU / EN (кнопка-флаг в шапке) ===== */
 let LANG=(()=>{try{return localStorage.getItem('fs_lang')==='en'?'en':'ru'}catch(e){return 'ru'}})();
 let LOC=LANG==='en'?'en-GB':'ru-RU';
 let CUR=null,REG=[],CACHE={};
 let TABS=[],EXT=null,DAILY=[],SPARSE=[],PTS=[],DET={},NOTE={},YE=[];
-const DATA_BASE=window.FS_DATA_BASE||'https://raw.githubusercontent.com/danilaturdyev/finscope/main/data/';
+const DATA_BASE=window.FS_DATA_BASE||'/data/',RAW_BASE='https://raw.githubusercontent.com/danilaturdyev/finscope/main/data/';
 const $=id=>document.getElementById(id);
 const sy=c=>c==='g'?'+':c==='r'?'−':'±';
 const U=s=>Date.parse(s+'T00:00:00Z');
@@ -516,7 +516,7 @@ function chart(){
  head(pts.length-1);
  if(CH){CH.remove();CH=null}
  $('chart').textContent='';
- if(!window.LightweightCharts){$('chart').textContent='Не удалось загрузить библиотеку графика.';return}
+ if(!window.LightweightCharts){$('chart').innerHTML='<div class="d" style="padding:48px 0;text-align:center">'+pT('Загружаю график…','Loading chart…')+'</div>';const k0=RNG;loadLW().then(()=>{if(RNG===k0&&!CH)chart()}).catch(()=>{$('chart').textContent='Не удалось загрузить библиотеку графика.'});return}
  const mu=cssv('--mu'),bd=cssv('--bd'),tx=cssv('--tx');
  CH=LightweightCharts.createChart($('chart'),{autoSize:true,handleScroll:false,handleScale:false,
   layout:{background:{type:'solid',color:'transparent'},textColor:mu,fontFamily:'ui-monospace,Menlo,Consolas,monospace',fontSize:11},
@@ -1033,7 +1033,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('mdl').hidden)mk
 setInterval(mkRender,30000);
 
 /* ===== Данные акций: data/stocks.json (список) и data/<ТИКЕР>.json (одна акция) ===== */
-async function getJSON(u){const pp=window.__pre&&window.__pre[u];if(pp){delete window.__pre[u];try{return await pp}catch(e){}}const r=await fetch(u,{cache:'no-cache'});if(!r.ok)throw new Error(r.status);return r.json()}
+async function getJSON(u){const pp=window.__pre&&window.__pre[u];if(pp){delete window.__pre[u];try{return await pp}catch(e){}}let r;try{r=await fetch(u);if(!r.ok)throw 0}catch(e){if(u.indexOf(DATA_BASE)!==0||DATA_BASE===RAW_BASE)throw e;r=await fetch(RAW_BASE+u.slice(DATA_BASE.length),{cache:'no-cache'});if(!r.ok)throw new Error(r.status)}return r.json()}
 const logoUrl=x=>x&&x.logo?DATA_BASE+x.logo:(x&&x.t?'/logo/'+x.t+'.png':'');
 const lgErr="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{className:'mkl',textContent:this.dataset.l}))";
 function setStockData(S){
@@ -1190,7 +1190,7 @@ async function pendOpen(T,id){
 async function pendChart(T,id){
  try{
   const r=await fetch('/api/series?r=2&t='+encodeURIComponent(T));if(!r.ok)throw 0;const j=await r.json();
-  if(id!==ROUTING)return;
+  await loadLW();if(id!==ROUTING)return;
   const pts=j.points||[];if(pts.length<2||!window.LightweightCharts)throw 0;
   const a=pts[0][1],b=pts[pts.length-1][1],ch=(b/a-1)*100,col=cssv(ch>=0?'--up':'--dn');
   $('pPx').textContent='$'+b.toFixed(2);$('pCh').innerHTML=`<span class="${ch>=0?'up':'dn'}">${pct(ch)}</span> ${pT('за 30 дней','over 30 days')}`;

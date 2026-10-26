@@ -123,7 +123,7 @@ async function share(u, T, clean) {
   let html = await page();
   const title = (S ? S.name + ' (' + T + ')' : T) + ' · FinScope';
   const desc = S && S.verdict ? S.verdict.title + '. ' + String(S.verdict.text || '').slice(0, 160) : 'Акции понятным языком';
-  const img = BASE + 'data/og/' + T + '.png';
+  const img = SITE + '/ogimg/' + T + '.png';
   const meta = '<meta property="og:type" content="website"><meta property="og:site_name" content="FinScope"><meta property="og:title" content="' + esc(title) + '"><meta property="og:description" content="' + esc(desc) + '"><meta property="og:url" content="' + esc(SITE + (clean ? '/' : '/s/') + T) + '"><meta property="og:image" content="' + esc(img) + '"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="' + esc(title) + '"><meta name="twitter:description" content="' + esc(desc) + '"><meta name="twitter:image" content="' + esc(img) + '">';
   const go = '<script>history.replaceState(null,"","/#/' + T + '")</script>';
   html = html.replace(/<title>[\s\S]*?<\/title>/, '<title>' + esc(title) + '</title>');
@@ -474,6 +474,8 @@ export default {
     if (u.pathname === '/api/request') return reqApi(req, u, env, ctx);
     { const m = u.pathname.match(/^\/logo\/([A-Z][A-Z0-9.\-]{0,9})\.png$/);
       if (m) return logoProxy(m[1], ctx); }
+    { const m = u.pathname.match(/^\/ogimg\/([A-Z][A-Z0-9.\-]{0,9})\.png$/); if (m) return ogImg(m[1]); }
+    if (u.pathname.startsWith('/data/')) return dataProxy(u.pathname.slice(6));
     if (u.pathname === '/api/hit') return hit(u, env);
     if (u.pathname === '/stats') return stats(u, env);
     if (u.pathname.startsWith('/s/')) return share(u, u.pathname.slice(3).toUpperCase());
@@ -503,4 +505,23 @@ async function logoProxy(t, ctx) {
   if (!res) return new Response('', { status: 404, headers: { 'cache-control': 'public, max-age=3600' } });
   ctx.waitUntil(caches.default.put(key, res.clone()));
   return res;
+}
+
+// Файлы данных (/data/AAPL.json, quotes.json, картинки) через кэш Cloudflare вместо прямых запросов к GitHub
+async function dataProxy(f) {
+  if (!/^[A-Za-z0-9][A-Za-z0-9._\-\/]{0,60}\.(json|png|svg)$/.test(f) || f.includes('..')) return new Response('Not found', { status: 404 });
+  try {
+    const r = await fetch(BASE + 'data/' + f, { cf: { cacheTtl: 120, cacheEverything: true } });
+    if (!r.ok) return new Response('Not found', { status: r.status === 404 ? 404 : 502 });
+    const ct = f.endsWith('.json') ? 'application/json; charset=utf-8' : f.endsWith('.svg') ? 'image/svg+xml' : 'image/png';
+    return new Response(r.body, { headers: { 'content-type': ct, 'cache-control': f.endsWith('.json') ? 'public, max-age=60, stale-while-revalidate=300' : 'public, max-age=86400' } });
+  } catch (e) { return new Response('Bad gateway', { status: 502 }); }
+}
+
+// Картинка для превью ссылки: своя у разобранных вручную акций, у остальных общая заставка
+async function ogImg(T) {
+  for (const f of ['data/og/' + T + '.png', 'data/icon-512.png']) {
+    try { const r = await fetch(BASE + f, { cf: { cacheTtl: 3600, cacheEverything: true } }); if (r.ok) return new Response(r.body, { headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=3600' } }); } catch (e) {}
+  }
+  return new Response('Not found', { status: 404 });
 }
