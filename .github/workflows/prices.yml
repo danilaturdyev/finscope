@@ -1,0 +1,23 @@
+name: Prices
+# Будни, через полтора часа после закрытия американской биржи (UTC 21:30). Секрет TD_KEY: Settings -> Secrets and variables -> Actions.
+on:
+  schedule: [{ cron: '30 21 * * 1-5' }]
+  workflow_dispatch: {}
+permissions: { contents: write }
+concurrency: { group: prices, cancel-in-progress: false }
+jobs:
+  prices:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node tools/update_prices.mjs
+        env: { TD_KEY: '${{ secrets.TD_KEY }}' }
+      - run: node tools/build_quotes.mjs
+      - run: node tools/validate.mjs
+      - name: Commit
+        run: |
+          git config user.name "finscope-bot"; git config user.email "bot@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet || (git commit -m "Prices $(date -u +%F)" && git pull --rebase -q && git push)
