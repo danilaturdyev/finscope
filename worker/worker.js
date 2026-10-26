@@ -238,9 +238,10 @@ async function quotes(u, env, ctx) {
   const cache = caches.default, key = new Request(u.origin + '/__fresh/quotes' + (after ? '_close_' + e.date : ''));
   const hit = await cache.match(key); if (hit) return hit;
   let reg = []; try { const r = await fetch(BASE + 'data/stocks.json', { cf: { cacheTtl: 300, cacheEverything: true } }); if (r.ok) reg = await r.json(); } catch (x) {}
-  const list = (Array.isArray(reg) ? reg : []).slice(0, 8);
+  const list = (Array.isArray(reg) ? reg : []).slice(0, 24);
   const res = await Promise.all(list.map(async x => {
     try {
+      if (open) { const nq = await nqQuote(x.t); if (nq) return [x.t, nq]; }
       const ex = await tdExtra(x.t);
       let q = null;
       for (const m of ex.mic ? [micOk[x.t], ex.mic, '&mic_code=XNAS', ''].filter((m, k, a) => m !== undefined && a.indexOf(m) === k) : ['']) {
@@ -257,6 +258,17 @@ async function quotes(u, env, ctx) {
   const r = new Response(body, { headers: Object.assign({ 'cache-control': 'public, max-age=' + (ok ? (after ? 1800 : 300) : 60) }, JSONH) });
   ctx.waitUntil(cache.put(key, r.clone()));
   return r;
+}
+// Живая цена с Nasdaq (без ключа и лимитов), только во время основной сессии; при сбое работает Twelve Data
+const NQH = { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36', accept: 'application/json, text/plain, */*', origin: 'https://www.nasdaq.com', referer: 'https://www.nasdaq.com/' };
+async function nqQuote(T) {
+  try {
+    const r = await fetch('https://api.nasdaq.com/api/quote/' + encodeURIComponent(T) + '/info?assetclass=stocks', { headers: NQH });
+    if (!r.ok) return null;
+    const d = ((await r.json()) || {}).data, p = d && d.primaryData; if (!p) return null;
+    const c = parseFloat(String(p.lastSalePrice).replace(/[$,]/g, '')), nc = parseFloat(String(p.netChange).replace(/[+,$]/g, '')), pc = c - nc;
+    return isFinite(c) && isFinite(nc) && pc > 0 ? { c, p: +pc.toFixed(4) } : null;
+  } catch (e) { return null; }
 }
 // Значки сайта лежат в data/ (GitHub); отдаём их по стандартным адресам, чтобы их находили браузеры и Google.
 const ICONS = { '/favicon.svg': ['icon.svg', 'image/svg+xml'], '/favicon.ico': ['icon-48.png', 'image/png'], '/apple-touch-icon.png': ['icon-180.png', 'image/png'], '/icon-512.png': ['icon-512.png', 'image/png'], '/icon-192.png': ['icon-192.png', 'image/png'], '/icon-maskable.png': ['icon-maskable.png', 'image/png'] };
@@ -477,6 +489,7 @@ export default {
       if (m) return logoProxy(m[1], ctx); }
     { const m = u.pathname.match(/^\/ogimg\/([A-Z][A-Z0-9.\-]{0,9})\.png$/); if (m) return ogImg(m[1]); }
     if (u.pathname.startsWith('/data/')) return dataProxy(u.pathname.slice(6));
+    if (u.pathname === '/api/fin') return fin(u, env, ctx);
     if (u.pathname === '/api/tg') return tgApi(req, u, env);
     if (u.pathname === '/api/hit') return hit(u, env);
     if (u.pathname === '/stats') return stats(u, env);
@@ -499,11 +512,14 @@ async function logoProxy(t, ctx) {
   const hit = await caches.default.match(key);
   if (hit) return hit;
   let res = null;
-  try {
-    const r = await fetch('https://cdn.alphavantage.co/logos/' + t + '.png', { cf: { cacheTtl: 2592000, cacheEverything: true } });
-    const ct = r.headers.get('content-type') || '';
-    if (r.ok && ct.startsWith('image/')) res = new Response(r.body, { headers: { 'content-type': ct, 'cache-control': 'public, max-age=2592000' } });
-  } catch (e) {}
+  // источники по тикеру, первый ответивший картинкой выигрывает
+  for (const src of ['https://assets.parqet.com/logos/symbol/' + t + '?format=png', 'https://financialmodelingprep.com/image-stock/' + t + '.png', 'https://cdn.alphavantage.co/logos/' + t + '.png']) {
+    try {
+      const r = await fetch(src, { cf: { cacheTtl: 2592000, cacheEverything: true } });
+      const ct = r.headers.get('content-type') || '';
+      if (r.ok && ct.startsWith('image/')) { const b = await r.arrayBuffer(); if (b.byteLength > 300) { res = new Response(b, { headers: { 'content-type': ct, 'cache-control': 'public, max-age=2592000' } }); break; } }
+    } catch (e) {}
+  }
   if (!res) return new Response('', { status: 404, headers: { 'cache-control': 'public, max-age=3600' } });
   ctx.waitUntil(caches.default.put(key, res.clone()));
   return res;
@@ -595,4 +611,43 @@ async function tgDaily(env) {
   if (!text) return;
   const r = await tgSend(env, S.owner, '<b>FinScope</b>\n' + text);
   if (r && r.ok) await env.STATS.put('tg:seen', JSON.stringify(Array.from(seen).slice(-300)));
+}
+
+// ===== Финансы компании из SEC (для карточек без полного разбора): выручка и чистая прибыль по кварталам =====
+const FIN_UA = env => env.SEC_UA || 'FinScope personal research site (finscope.uk)';
+async function secJson(url, env, ttl) {
+  const r = await fetch(url, { headers: { 'user-agent': FIN_UA(env), accept: 'application/json' }, cf: { cacheTtl: ttl, cacheEverything: true } });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+async function fin(u, env, ctx) {
+  const T = (u.searchParams.get('t') || '').toUpperCase();
+  const H = Object.assign({ 'cache-control': 'public, max-age=21600' }, JSONH);
+  if (!/^[A-Z][A-Z0-9.\-]{0,9}$/.test(T)) return new Response(JSON.stringify({ ok: false }), { status: 400, headers: JSONH });
+  try {
+    const m = await secJson('https://www.sec.gov/files/company_tickers_exchange.json', env, 86400);
+    const f = m.fields || [], iC = f.indexOf('cik'), iT = f.indexOf('ticker');
+    const row = (m.data || []).find(d => String(d[iT]).toUpperCase() === T);
+    if (!row) return new Response(JSON.stringify({ ok: false }), { headers: H });
+    const cik = String(row[iC]).padStart(10, '0');
+    const pick = async tags => {
+      for (const tag of tags) {
+        try {
+          const j = await secJson('https://data.sec.gov/api/xbrl/companyconcept/CIK' + cik + '/us-gaap/' + tag + '.json', env, 21600);
+          const un = j.units && (j.units.USD || []);
+          const q = (un || []).filter(x => x.start && x.end && /^10-[QK]/.test(x.form || '')).map(x => ({ s: x.start, e: x.end, v: x.val, d: (Date.parse(x.end) - Date.parse(x.start)) / 864e5, fp: x.fp, fy: x.fy }));
+          // одиночные кварталы (~3 месяца) и годовые итоги (~12 месяцев), без повторов по дате окончания
+          const uniq = (arr) => { const o = new Map(); arr.forEach(x => o.set(x.e, x)); return Array.from(o.values()).sort((a, b) => a.e < b.e ? -1 : 1); };
+          const qs = uniq(q.filter(x => x.d > 80 && x.d < 100)), ys = uniq(q.filter(x => x.d > 350 && x.d < 380));
+          if (qs.length >= 2 || ys.length >= 1) return { q: qs.slice(-5).map(x => [x.e, x.v]), y: ys.slice(-3).map(x => [x.e, x.v]) };
+        } catch (e) {}
+      }
+      return null;
+    };
+    const [rev, ni] = await Promise.all([
+      pick(['RevenueFromContractWithCustomerExcludingAssessedTax', 'Revenues', 'SalesRevenueNet', 'RevenueFromContractWithCustomerIncludingAssessedTax']),
+      pick(['NetIncomeLoss', 'ProfitLoss']),
+    ]);
+    return new Response(JSON.stringify({ ok: !!(rev || ni), rev, ni }), { headers: H });
+  } catch (e) { return new Response(JSON.stringify({ ok: false, why: String(e.message || e) }), { headers: Object.assign({}, JSONH, { 'cache-control': 'public, max-age=300' }) }); }
 }
